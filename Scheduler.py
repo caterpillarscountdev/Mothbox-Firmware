@@ -505,9 +505,6 @@ def run_shutdown_pi5():
     else:
       print(stdout.decode())
 
-
-
-
     #Give it an extra second in case details need to sink in
     print("shutting down in 3 seconds")
     time.sleep(3)
@@ -930,6 +927,9 @@ print("Wakeup Alarms have been set!")
 # Scheduling complete, now set all the other settings
 # Toggle a mode where the flash lights are always on
 enable_onlyflash()
+
+if newwifidetected:
+    add_wifi_credentials(ssid, wifipass)
 
 
 #Update the Epaper screen if it is available
