@@ -77,7 +77,7 @@ def debug_connected_to_ground():
 # Define GPIO pin for checking
 off_pin = 16
 debug_pin = 12
-mode = "ARMED"  # possible modes are OFF or DEBUG or ARMED
+mode = "ACTIVE"  # possible modes are OFF or DEBUG or ARMED
 # Set GPIO pin as input
 GPIO.setup(off_pin, GPIO.IN)
 GPIO.setup(debug_pin, GPIO.IN)
