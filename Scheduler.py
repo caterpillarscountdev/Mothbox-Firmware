@@ -727,7 +727,7 @@ def set_cron_for_attract_camera(settings):
         i.minute.every(interval)
         i.hour.parse(hour)
         i.dow.parse(weekday)
-    for i in c.find_command("AttractOn"):
+    for i in c.find_command("Attract_On"):
         i.minute.parse(minute)
         i.hour.parse(hour)
         i.dow.parse(weekday)
