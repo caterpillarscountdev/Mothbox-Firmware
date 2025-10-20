@@ -700,9 +700,7 @@ def clear_wakeup_alarm():
     """
     Clears the existing wakeup alarm for the Raspberry Pi using /sys/class/rtc/rtc0/wakealarm.
     """
-    # Open the wakealarm file for writing with sudo
-    with open("/sys/class/rtc/rtc0/wakealarm", "w") as f:
-        f.write("0")  # Write 0 to clear the alarm
+    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", "0")
 
 
 def set_wakeup_alarm(epoch_time):
@@ -713,13 +711,28 @@ def set_wakeup_alarm(epoch_time):
         epoch_time: A unix timestamp representing the next wakeup time.
     """
     # Open the wakealarm file for writing
-    with open("/sys/class/rtc/rtc0/wakealarm", "w") as f:
-        # Write the epoch time in seconds
-        f.write(str(epoch_time))
+    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", str(epoch_time)
     logging.info("Set the Wakeup Alarm" + str(epoch_time))
     #Write to controls here!
     set_nextWakeinControls("/home/pi/Desktop/Mothbox/controls.txt",epoch_time)
+
+def set_cron_for_attract_camera(settings):
+    c = crontab.Crontab(user="pi")
+    interval = settings["camera_interval"] or 1
+    minute = settings["hour"].replace(";", ",")
+    hour = settings["hour"].replace(";", ",")
+    weekday = settings["weekday"].replace(";", ",")
     
+    for i in c.find_command("TakePhoto"):
+        i.minute.every(interval)
+        i.hour.on(hour)
+        i.weekday.on(weekday)
+    for i in c.find_command("AttractOn"):
+        i.minute.on(minute)
+        i.hour.on(hour)
+        i.weekday.on(weekday)
+    c.write()
+       
 
 print("----------------- STARTING Scheduler!-------------------")
 
@@ -898,7 +911,7 @@ if rpiModel == 5:
     # Loop through each key-value pair in the dictionary
     for key, value in settings.items():
         # Check if the value is a string and contains semicolons
-        if isinstance(value, str) and ";" in value:
+        if isinstance(value, str) and ";" in value: 
             # Replace semicolons with commas
             settings[key] = value.replace(";", ",")
     cron_expression = (
@@ -917,6 +930,8 @@ if rpiModel == 5:
 
     # Clear existing wakeup alarm (assuming sudo access)
     clear_wakeup_alarm()
+
+    set_cron_for_attract_camera(settings)
 
 print(
     f"Next wakeup event scheduled for: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_epoch_time))}"
