@@ -686,7 +686,7 @@ def calculate_next_event(cron_expression):
         A unix timestamp (epoch time) of the next scheduled event.
     """
     # Create a cron object from the expression
-    cron = CronTab(user="root")
+    cron = CronTab()
     job = cron.new(command="echo hello_world")
     job.setall(cron_expression)
     # Get the next scheduled time as a datetime object
@@ -700,7 +700,7 @@ def clear_wakeup_alarm():
     """
     Clears the existing wakeup alarm for the Raspberry Pi using /sys/class/rtc/rtc0/wakealarm.
     """
-    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", "0")
+    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", "0"])
 
 
 def set_wakeup_alarm(epoch_time):
@@ -711,26 +711,26 @@ def set_wakeup_alarm(epoch_time):
         epoch_time: A unix timestamp representing the next wakeup time.
     """
     # Open the wakealarm file for writing
-    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", str(epoch_time)
+    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", str(epoch_time)])
     logging.info("Set the Wakeup Alarm" + str(epoch_time))
     #Write to controls here!
     set_nextWakeinControls("/home/pi/Desktop/Mothbox/controls.txt",epoch_time)
 
 def set_cron_for_attract_camera(settings):
-    c = crontab.Crontab(user="pi")
-    interval = settings["camera_interval"] or 1
+    c = crontab.CronTab(user="pi")
+    interval = settings.get("camera_interval", 1)
     minute = settings["hour"].replace(";", ",")
     hour = settings["hour"].replace(";", ",")
     weekday = settings["weekday"].replace(";", ",")
     
     for i in c.find_command("TakePhoto"):
         i.minute.every(interval)
-        i.hour.on(hour)
-        i.weekday.on(weekday)
+        i.hour.parse(hour)
+        i.weekday.parse(weekday)
     for i in c.find_command("AttractOn"):
-        i.minute.on(minute)
-        i.hour.on(hour)
-        i.weekday.on(weekday)
+        i.minute.parse(minute)
+        i.hour.parse(hour)
+        i.weekday.parse(weekday)
     c.write()
        
 
