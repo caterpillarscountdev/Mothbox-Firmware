@@ -719,7 +719,7 @@ def set_wakeup_alarm(epoch_time):
 def set_cron_for_attract_camera(settings):
     c = crontab.CronTab(user="pi")
     interval = settings.get("camera_interval", 1)
-    minute = settings["hour"].replace(";", ",")
+    minute = settings["minute"].replace(";", ",")
     hour = settings["hour"].replace(";", ",")
     weekday = settings["weekday"].replace(";", ",")
     
