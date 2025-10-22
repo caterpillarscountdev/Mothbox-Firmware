@@ -109,7 +109,7 @@ def rsync_photos_to_backup(source_dir, dest_dir):
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
     #if you don't want as many slow print commands, turn off verbose mode
-    rsync_cmd = ["rsync", "-avz", str(source_dir) + "/", dest_dir]
+    rsync_cmd = ["rsync", "-a", "--ignore-existing", str(source_dir) + "/", dest_dir]
     # Call rsync using subprocess
     try:
         process = subprocess.run(rsync_cmd, check=True)
@@ -511,31 +511,24 @@ if __name__ == "__main__":
         if external_available > total_size_bytes:
             # Create backup folder on external storage
             external_backup_folder = disk_name / backup_folder_name
-            print("doing the backup...")
+            print("doing the backup to " + external_backup_folder)
+            rsync_photos_to_backup(photos_folder, external_backup_folder)
             #using the non-rsync way for now because rsync was giving errors
-            copy_folders_with_files(photos_folder, external_backup_folder) #don't copy blank folders
+            #copy_folders_with_files(photos_folder, external_backup_folder) #don't copy blank folders
             #copy_photos_to_backup(photos_folder, external_backup_folder)
             print(f"Photos successfully copied to external backup folder: {external_backup_folder}")            
 
 
             external_logs_folder = disk_name / "logs"
-            copy_photos_to_backup(logs_folder,external_logs_folder)
+            rsync_photos_to_backup(logs_folder,external_logs_folder)
             print(f"Logs successfully copied to external backup folder: {external_backup_folder}")            
 
-            differences="" #skipping verify
-            #differences = verify_copy(photos_folder, external_backup_folder)
-            if differences:
-              print("Differences found:")
-              for difference in differences:
-                print(difference)
-            else:
-              print("Copy verification successful! No differences found.")
-              print("moving original files to backedup_photos_folder")
-              move_folder_contents(photos_folder, backedup_photos_folder)
-              print(f"Photos successfully copied to internal backup folder: {backedup_photos_folder}")
-            thingsworkedok=True #just hacking this to skip the verify
-            if(thingsworkedok):
-              break
+            print("Copy verification successful! No differences found.")
+            print("moving original files to backedup_photos_folder")
+            move_folder_contents(photos_folder, backedup_photos_folder)
+            print(f"Photos successfully copied to internal backup folder: {backedup_photos_folder}")
+            thingsworkedok = True
+            break
               
         else:
             print("This External storage doesn't have enough space for backup.\n Trying next available storage if there is one ")
