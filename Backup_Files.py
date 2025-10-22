@@ -543,5 +543,8 @@ if __name__ == "__main__":
         print("stuff never worked out with this backup, your files are not properly backedup")
     else:
         print("stuff worked out BACKUP COMPLETE")
-    print("end")
+    now = datetime.now()
+    formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
+
+    print(f"End: {formatted_time}")
 quit()
