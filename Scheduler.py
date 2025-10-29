@@ -640,7 +640,7 @@ def add_wifi_credentials(ssid, password):
     """
 
     # Add the new connection with nmcli
-    command = ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
+    command = ["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", password]
     try:
         subprocess.run(command, check=True)
         print(f"Successfully added WiFi network: {ssid}")
