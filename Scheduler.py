@@ -732,11 +732,11 @@ def set_cron_for_attract_camera(settings):
             if "," in minute:
                 i.minute.parse(minute)
             else:
-                i.minute.during(int(minute), int(settings["runtime"]))
+                i.minute.during(int(minute), min(int(minute)+int(settings["runtime"]), 59))
                 i.hour.parse(hour)
                 i.dow.parse(weekday)
-    except ValueError:
-        pass
+    except ValueError, e:
+        print("Problem parsing cron settings", e)
     c.write()
        
 
@@ -886,8 +886,6 @@ set_timings("/home/pi/Desktop/Mothbox/controls.txt", settings["minute"], setting
 
 
 
-if "runtime" in settings:
-    del settings["runtime"]
 if "utc_off" in settings:
     utc_off=settings["utc_off"]
     set_UTCinControls("/home/pi/Desktop/Mothbox/controls.txt",utc_off)
