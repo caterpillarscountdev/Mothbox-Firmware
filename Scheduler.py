@@ -727,10 +727,16 @@ def set_cron_for_attract_camera(settings):
         i.minute.every(interval)
         i.hour.parse(hour)
         i.dow.parse(weekday)
-    for i in c.find_command("Attract_On"):
-        i.minute.parse(minute)
-        i.hour.parse(hour)
-        i.dow.parse(weekday)
+    try:
+        for i in c.find_command("Attract_On"):
+            if "," in minute:
+                i.minute.parse(minute)
+            else:
+                i.minute.during(int(minute), int(settings["runtime"]))
+                i.hour.parse(hour)
+                i.dow.parse(weekday)
+    except ValueError:
+        pass
     c.write()
        
 
