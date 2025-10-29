@@ -735,7 +735,7 @@ def set_cron_for_attract_camera(settings):
                 i.minute.during(int(minute), min(int(minute)+int(settings["runtime"]), 59))
                 i.hour.parse(hour)
                 i.dow.parse(weekday)
-    except ValueError, e:
+    except ValueError as e:
         print("Problem parsing cron settings", e)
     c.write()
        
