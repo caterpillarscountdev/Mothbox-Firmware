@@ -511,7 +511,7 @@ if __name__ == "__main__":
         if external_available > total_size_bytes:
             # Create backup folder on external storage
             external_backup_folder = disk_name / backup_folder_name
-            print("doing the backup to " + external_backup_folder)
+            print(f"doing the backup to: {external_backup_folder}")
             rsync_photos_to_backup(photos_folder, external_backup_folder)
             #using the non-rsync way for now because rsync was giving errors
             #copy_folders_with_files(photos_folder, external_backup_folder) #don't copy blank folders
