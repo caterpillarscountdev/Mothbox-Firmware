@@ -321,8 +321,9 @@ def load_settings(filename):
     search_depth = 2  # only want to look in the top directory of an external drive, two levels gets us there while still looking through any media
     file_path = default_path
     for path in external_media_paths:
-        file_path = find_file(path, "schedule_settings.csv", depth=search_depth)
-        if file_path:
+        found = find_file(path, "schedule_settings.csv", depth=search_depth)
+        if found:
+            file_path = found
             print(f"Found settings on external media: {file_path}")
             break
             
