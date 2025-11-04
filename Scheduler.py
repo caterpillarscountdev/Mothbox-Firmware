@@ -188,7 +188,7 @@ def set_UTCinControls(filepath, utcoff):
         for line in lines:
             if line.startswith("UTCoff="):
                 file.write("UTCoff=" + str(utcoff) + "\n")  # Replace with False
-                print("set next UTC offset in controls " + str(utcoff))
+                print("set UTC offset in controls " + str(utcoff))
             else:
                 file.write(line)  # Keep other lines unchanged
 
@@ -685,7 +685,7 @@ def clear_wakeup_alarm():
     """
     Clears the existing wakeup alarm for the Raspberry Pi using /sys/class/rtc/rtc0/wakealarm.
     """
-    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", "0"])
+    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", "0"], capture_output=True)
 
 
 def set_wakeup_alarm(epoch_time):
@@ -696,8 +696,7 @@ def set_wakeup_alarm(epoch_time):
         epoch_time: A unix timestamp representing the next wakeup time.
     """
     # Open the wakealarm file for writing
-    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", str(epoch_time)])
-    logging.info("Set the Wakeup Alarm" + str(epoch_time))
+    subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/wakeup.sh", str(epoch_time)], capture_output=True)
     #Write to controls here!
     set_nextWakeinControls("/home/pi/Desktop/Mothbox/controls.txt",epoch_time)
 
