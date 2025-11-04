@@ -325,7 +325,6 @@ def load_settings(filename):
         if file_path:
             print(f"Found settings on external media: {file_path}")
             break
-        else:
             
     if file_path == default_path:
         print("No external settings, using internal csv")

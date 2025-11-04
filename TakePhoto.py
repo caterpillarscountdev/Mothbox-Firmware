@@ -47,6 +47,8 @@ import time
 import os, platform
 from pathlib import Path
 
+Picamera2.set_logging(Picamera2.WARNING)
+
 #IF the mothbox is supposed to be off, don't take a photo!
 GPIO.setmode(GPIO.BCM)
 
