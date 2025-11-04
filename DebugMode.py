@@ -24,7 +24,7 @@ now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
 
 subprocess.run(["/home/pi/Desktop/Mothbox/StopCron.py"])
-subprocess.run(["/home/pi/Desktop/Mothbox/AttractOff.py"])
+subprocess.run(["/home/pi/Desktop/Mothbox/Attract_Off.py"])
 
 
 subprocess.run(["/home/pi/Desktop/Mothbox/scripts/MothPower/stop_lowpower.sh"])
