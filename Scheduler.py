@@ -175,7 +175,6 @@ def set_computerName(filepath, compname):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("name"):
                 file.write("name=" + str(compname) + "\n")  # Replace with False
                 print("set name " + compname)
@@ -187,7 +186,6 @@ def set_UTCinControls(filepath, utcoff):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("UTCoff="):
                 file.write("UTCoff=" + str(utcoff) + "\n")  # Replace with False
                 print("set next UTC offset in controls " + str(utcoff))
@@ -201,7 +199,6 @@ def set_nextWakeinControls(filepath, etime):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("nextWake"):
                 file.write("nextWake=" + str(etime) + "\n")  # Replace with False
                 print("set next wake in controls " + str(etime))
@@ -214,7 +211,6 @@ def set_timings(filepath, mins,hours,weekdays,runtimes):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("hours"):
                 file.write("hours=" + str(hours) + "\n")  # Replace with False
                 print("set hours " + hours)
@@ -245,7 +241,7 @@ def generate_unique_name(serial, lang):
     np.random.seed(word_seed)
     # Create two word phrases
     if lang == 0:  # English
-        extra = adjectives + colors + verbs
+        extra = colors #adjectives + colors + verbs
         random_extra = str(np.random.choice(extra, 1)[0]).lower()
         random_animal = str(np.random.choice(animals, 1)[0]).capitalize()
         finalCombo = random_extra + random_animal
@@ -323,15 +319,17 @@ def load_settings(filename):
     external_media_paths = ("/media", "/mnt")  # Common external media mount points
     default_path = "/home/pi/Desktop/Mothbox/schedule_settings.csv"
     search_depth = 2  # only want to look in the top directory of an external drive, two levels gets us there while still looking through any media
-    found = 0
+    file_path = default_path
     for path in external_media_paths:
         file_path = find_file(path, "schedule_settings.csv", depth=search_depth)
         if file_path:
             print(f"Found settings on external media: {file_path}")
             break
         else:
-            print("No external settings, using internal csv")
-            file_path = default_path
+            
+    if file_path == default_path:
+        print("No external settings, using internal csv")
+
 
     global runtime, utc_off, ssid, wifipass, newwifidetected, onlyflash
     utc_off = 0  # this is the offsett from UTC time we use to set the alarm
@@ -357,13 +355,11 @@ def load_settings(filename):
                 ):
                     # value=int(value)
                     value = value
-                    print(setting + value)
                     # value = getattr(controls.AwbModeEnum, value)  # Access enum value
                     # Assuming AwbMode is a string representing an enum value
                     # pass  # No conversion needed for string
                 elif setting == "runtime":
                     runtime = int(value)
-                    print(runtime)
                 elif setting == "utc_off":
                     utc_off = int(value)
                 elif setting == "ssid":
@@ -374,8 +370,6 @@ def load_settings(filename):
                     wifipass = value
                 elif setting == "onlyflash":
                     onlyflash = int(value)
-                else:
-                    print(f"Warning: Unknown setting: {setting}. Ignoring.")
 
                 settings[setting] = value
 
@@ -432,8 +426,6 @@ def run_shutdown_pi5():
     """
     Shut down the raspberry pi
     """
-    print("about to launch the shutdown")
-    print("but we are running ONE LAST WAKEUP SCHEDULER")
 
     # SCHEDULE WAKEUP AGAIN FOR SECURITY
     settings = load_settings("/home/pi/Desktop/Mothbox/schedule_settings.csv")
@@ -441,8 +433,6 @@ def run_shutdown_pi5():
         del settings["runtime"]
     if "utc_off" in settings:
         del settings["utc_off"]
-
-    print(settings)
 
     # don't need to modify the hours to UTC like we do for pijuice
     # Build Cron expression
@@ -466,7 +456,6 @@ def run_shutdown_pi5():
         + " "
         + str(settings["weekday"])
     )
-    print(cron_expression)
     next_epoch_time = calculate_next_event(cron_expression)
 
     # Clear existing wakeup alarm (assuming sudo access)
@@ -476,8 +465,7 @@ def run_shutdown_pi5():
         f"Next wakeup event scheduled for: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_epoch_time))}"
     )
     set_wakeup_alarm(next_epoch_time)
-    print("Wakeup Alarms have been set!")
-
+    '''
     # GPS check / 10 second delay
     print("Checking GPS (if available) for 10 seconds")
     process = subprocess.Popen(['python', '/home/pi/Desktop/Mothbox/GPS.py'],
@@ -492,7 +480,8 @@ def run_shutdown_pi5():
 
 
     #Epaper
-    #Update the Epaper screen if it is available 
+    #Update the Epaper screen if it is available
+
     GPIO.cleanup()
 
     print("Updating Epaper display before shutdown (if available)")
@@ -504,7 +493,7 @@ def run_shutdown_pi5():
       print(f"Error running script: {stderr.decode()}")
     else:
       print(stdout.decode())
-
+    '''
     #Give it an extra second in case details need to sink in
     print("shutting down in 3 seconds")
     time.sleep(3)
@@ -567,10 +556,9 @@ def run_shutdown_pi5_FAST():
         f"Next wakeup event scheduled for: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_epoch_time))}"
     )
     set_wakeup_alarm(next_epoch_time)
-    print("Wakeup Alarms have been set!")
 
 
-
+    '''
     #Epaper
     #Update the Epaper screen if it is available 
     GPIO.cleanup()
@@ -584,7 +572,7 @@ def run_shutdown_pi5_FAST():
       print(f"Error running script: {stderr.decode()}")
     else:
       print(stdout.decode())
-
+    '''
 
 
     # subprocess.run(["python", "/home/pi/Desktop/Mothbox/TurnEverythingOff.py"])
@@ -599,7 +587,6 @@ def enable_shutdown():
 
     with open("/home/pi/Desktop/Mothbox/controls.txt", "w") as file:
         for line in lines:
-            # print(line)
             if line.startswith("shutdown_enabled="):
                 file.write("shutdown_enabled=True\n")  # Replace with False
                 print("enabling shutown in controls.txt")
@@ -614,11 +601,10 @@ def enable_onlyflash():
 
     with open("/home/pi/Desktop/Mothbox/controls.txt", "w") as file:
         for line in lines:
-            # print(line)
             if line.startswith("OnlyFlash="):
                 if onlyflash == 1:
                     file.write("OnlyFlash=True\n")  # Replace with False
-                    print("enabling onlyflash attraction controls.txt")
+                    print("enabling onlyflash in controls.txt")
                 else:
                     file.write("OnlyFlash=False\n")  # Replace with False
 
@@ -752,8 +738,6 @@ rpiModel = determinePiModel()
 now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
 
-print(f"Current time: {formatted_time} on a RPi model " + str(rpiModel))
-
 if rpiModel == 4:
     from pijuice import PiJuice
 
@@ -769,7 +753,6 @@ if rpiModel == 4:
 
 
 if rpiModel == 5:
-    print("Sync hwclock to main clock for security")
     os.system("sudo hwclock -w")
 
     desired_settings = {"POWER_OFF_ON_HALT": "1", "WAKE_ON_GPIO": "0"}
@@ -778,7 +761,6 @@ if rpiModel == 5:
     if all(
         current_settings.get(key) == value for key, value in desired_settings.items()
     ):
-        print("EEPROM settings are already correct.")
     else:
         for key, value in desired_settings.items():
             if key not in current_settings or current_settings[key] != value:
@@ -802,19 +784,10 @@ GPIO.setup(debug_pin, GPIO.IN)
 
 # Check for connection
 if debug_connected_to_ground():
-    print("GPIO pin", debug_pin, "DEBUG connected to ground.")
     mode = "DEBUG"
-else:
-    print("GPIO pin", debug_pin, "DEBUG NOT connected to ground.")
 
-# Check for connection
 if off_connected_to_ground():
-    print("GPIO pin", off_pin, "OFF PIN connected to ground.")
     mode = "OFF"  # this check comes second as the OFF state should override the DEBUG state in case both are attached
-else:
-    print("GPIO pin", off_pin, "OFF PIN NOT connected to ground.")
-
-print("Current Mothbox MODE: ", mode)
 
 if(mode=="OFF"):
     run_shutdown_pi5_FAST()
@@ -822,6 +795,9 @@ if(mode=="OFF"):
 
 
 # ----------END SWITCH CHECK----------------
+
+print(f"Current time: {formatted_time} on a RPi model {rpiModel} mode {mode}")
+
 
 # ~~~~~~ Setting the Mothbox's unique name ~~~~~~~~~~~~~~~~~~
 
@@ -847,8 +823,8 @@ sustantivos = data["Sustantivos"]
 # SetRaspberrypiName
 serial_number = get_serial_number()
 # 0 is english 1 is spanish 2 is either spanish or enlgish 3 is spanglish
-unique_name = generate_unique_name(serial_number, 3)
-print(f"Unique name for device: {unique_name}")
+unique_name = generate_unique_name(serial_number, 0)
+print(f"Unique name for device: {unique_name} {serial_number}")
 
 # Change it in controls
 set_computerName("/home/pi/Desktop/Mothbox/controls.txt", unique_name)
@@ -881,7 +857,6 @@ else:
 
 # ~~~~~~~ Do the Scheduling ~~~~~~~~~~~~~~~~~~~~
 settings = load_settings("/home/pi/Desktop/Mothbox/schedule_settings.csv")
-print(settings)
 set_timings("/home/pi/Desktop/Mothbox/controls.txt", settings["minute"], settings["hour"],settings["weekday"],settings["runtime"])
 
 
@@ -890,8 +865,6 @@ if "utc_off" in settings:
     utc_off=settings["utc_off"]
     set_UTCinControls("/home/pi/Desktop/Mothbox/controls.txt",utc_off)
     del settings["utc_off"]
-
-print("printing settings")
 
 if rpiModel == 4:
     modified_dict = modify_hours(
@@ -929,7 +902,6 @@ if rpiModel == 5:
         + " "
         + str(settings["weekday"])
     )
-    print(cron_expression)
     next_epoch_time = calculate_next_event(cron_expression)
 
     # Clear existing wakeup alarm (assuming sudo access)
@@ -941,7 +913,6 @@ print(
     f"Next wakeup event scheduled for: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_epoch_time))}"
 )
 set_wakeup_alarm(next_epoch_time)
-print("Wakeup Alarms have been set!")
 
 # Scheduling complete, now set all the other settings
 # Toggle a mode where the flash lights are always on
@@ -951,6 +922,7 @@ if newwifidetected:
     add_wifi_credentials(ssid, wifipass)
 
 
+'''
 #Update the Epaper screen if it is available
 GPIO.cleanup()
 print("Updating Epaper display (if available)")
@@ -962,13 +934,12 @@ if stderr:
   print(f"Error running script: {stderr.decode()}")
 else:
   print(stdout.decode())
-
+'''
 
 #Final Step (No other code past this, this is where it sits and waits until shutdown)
 # - prepare shutdown and wait
 # Toggle System MODE, shut down if in OFF/INACTIVE mode
 if mode == "OFF":
-    print("System is in OFF MODE")
     if rpiModel == 4:
         run_shutdown_pi4()
     if rpiModel == 5:
@@ -981,10 +952,6 @@ elif mode == "DEBUG":
     # Call the script using subprocess.run
     subprocess.run([debug_script_path])
     # stopcron()
-elif mode == "ACTIVE":
-    print("System is ACTIVE")
-else:
-    print("Invalid mode")
 
 if runtime > 0 and mode != "DEBUG":
     enable_shutdown()

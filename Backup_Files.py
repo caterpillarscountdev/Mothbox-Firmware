@@ -43,7 +43,6 @@ print("----------------- STARTING BACKUP FILES-------------------")
 now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
 
-print(f"Current time: {formatted_time}")
 
 def get_storage_info(path):
     """
@@ -105,51 +104,17 @@ def is_mounted(path):
       return True
   return False
 
-def rsync_photos_to_backup(source_dir, dest_dir):
+def rsync_to_backup(source_dir, dest_dir):
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
     #if you don't want as many slow print commands, turn off verbose mode
-    rsync_cmd = ["rsync", "-a", "--ignore-existing", str(source_dir) + "/", dest_dir]
+    rsync_cmd = ["rsync", "-az", "--size-only", str(source_dir) + "/", dest_dir]
     # Call rsync using subprocess
     try:
         process = subprocess.run(rsync_cmd, check=True)
     except subprocess.CalledProcessError as err:
         raise RuntimeError(f"Oh no! Mothbox couldn't backup your files!") from err
 
-def rsync_copy_and_delete_files(source_dir, dest_dir):
-    """
-    This function uses rsync to copy files from source_dir to dest_dir and then deletes the originals from source_dir if successful.
-    Args:
-      source_dir: The source directory containing the files to copy.
-      dest_dir: The destination directory to copy the files to.
-
-    Raises:
-      subprocess.CalledProcessError: If the rsync command fails.
-    """
-    if not os.path.exists(dest_dir):
-        os.makedirs(dest_dir)
-
-    # Build the rsync command with options for recursive copy, delete on source, and verbose output    
-    rsync_cmd = ["rsync", "-avz", str(source_dir) + "/", dest_dir]
-
-    # Call rsync using subprocess
-    process = subprocess.run(rsync_cmd, check=True)
-
-    # If successful, iterate through copied files and delete them individually
-    if process.returncode == 0:
-        for root, _, files in os.walk(source_dir):
-            for filename in files:
-                source_file = os.path.join(root, filename)
-                dest_file = os.path.join(dest_dir, filename)
-                # Check if the file was successfully copied (exists in destination)
-                if os.path.isfile(dest_file):
-                    try:
-                        os.remove(source_file)
-                        #print(f"Deleted: {source_file}")
-                    except OSError as e:
-                        print(f"Error deleting {source_file}: {e}")
-
-    return process.returncode
 def move_folder_contents(source_folder, destination_folder):
   """
   Moves the entire contents of a folder to a new folder, overwriting existing files.
@@ -444,8 +409,8 @@ if __name__ == "__main__":
         exit(1)
     # Get total and available space on desktop and external storage
     desktop_total, desktop_available = get_storage_info(desktop_path)
-    print("Desktop Total    Storage: \t" + str(desktop_total/1000000000))
-    print("Desktop Available Storage: \t" + str(desktop_available/1000000000))
+    print(f"Time: {formatted_time} Desktop Storage: Total {round(desktop_total/1024**3, 2)}GB Available {round(desktop_available/1024**3, 2)}GB ")
+
 
     """
   Finds storage capacity of all external drives and ranks them by size.
@@ -460,22 +425,15 @@ if __name__ == "__main__":
 
     # Sort disks by capacity (descending)
     # Check if any disks were found before sorting and printing
-    print("~~~sorting disks~~~~~~")
     if disks:
         sorted_disks = sorted(disks.items(), key=lambda item: item[1][0], reverse=True)
-        print("External Drives (Ranked by Total Size - Descending):")
         for disk_name, capacity in sorted_disks:
             print(
                 f"{disk_name}: total size {capacity[0]/1000000000} GB - available size {capacity[1]/1000000000} GB"
             )
     else:
-        print("No external drives found.")
-        print(
-            "stuff never worked out with this backup, your files are not properly backedup"
-        )
-
+        print("No external drives found. Exiting.")
         exit(1)
-    print("~~~sorted~~~~~~")
     
     #First, we should check and make sure that our internal disk isn't filling up with photos and causing problems
     # Check if internal storage has less than X GB left
@@ -486,14 +444,6 @@ if __name__ == "__main__":
         print(
             "Original photos that had been externally backed up have now been deleted due to low internal storage."
         )
-    else:
-        print(
-            "More than "
-            + str(x)
-            + "GB remain so original backed up files are kept"
-        )
-  
-    
     
     
     thingsworkedok = False
@@ -501,41 +451,25 @@ if __name__ == "__main__":
     # iterate through the disks, starting with the largest
     # see if it has enough available space, if not, choose the next largest
     for disk_name, capacity in sorted_disks:
-        print("chosen Disk: "+str(disk_name))
         total_available, external_available = capacity
-        print("total available \t"+str(total_available/1000000000)) 
         # Check if external storage has more available space than desktop
-        dir_path = photos_folder
-        total_size_bytes = get_dir_size(dir_path)
-        print("total needed \t\t"+str(total_size_bytes/1000000000))
+        total_size_bytes = get_dir_size(photos_folder)
         if external_available > total_size_bytes:
             # Create backup folder on external storage
             external_backup_folder = disk_name / backup_folder_name
-            print(f"doing the backup to: {external_backup_folder}")
-            rsync_photos_to_backup(photos_folder, external_backup_folder)
+            print(f"Photos backup to: {external_backup_folder} using {round(total_size_bytes/1024**3, 2)}GB")
+            rsync_to_backup(photos_folder, external_backup_folder)
             #using the non-rsync way for now because rsync was giving errors
             #copy_folders_with_files(photos_folder, external_backup_folder) #don't copy blank folders
             #copy_photos_to_backup(photos_folder, external_backup_folder)
-            print(f"Photos successfully copied to external backup folder: {external_backup_folder}")            
-
 
             external_logs_folder = disk_name / "logs"
-            rsync_photos_to_backup(logs_folder,external_logs_folder)
-            print(f"Logs successfully copied to external backup folder: {external_backup_folder}")            
+            rsync_to_backup(logs_folder,external_logs_folder)
+            print(f"Logs backup to: {external_backup_folder}")            
 
-            print("Copy verification successful! No differences found.")
-            print("moving original files to backedup_photos_folder")
-            move_folder_contents(photos_folder, backedup_photos_folder)
-            print(f"Photos successfully copied to internal backup folder: {backedup_photos_folder}")
             thingsworkedok = True
             break
               
-        else:
-            print("This External storage doesn't have enough space for backup.\n Trying next available storage if there is one ")
-    if thingsworkedok == False:
-        print("stuff never worked out with this backup, your files are not properly backedup")
-    else:
-        print("stuff worked out BACKUP COMPLETE")
     now = datetime.now()
     formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
 

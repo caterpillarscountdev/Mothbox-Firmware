@@ -98,7 +98,6 @@ def set_GPS(filepath, lat,lon):
             else:
                 file.write(line)  # Keep other lines unchanged
 
-print("startingGPS")
 got_gps_fix = False
 
 try:
@@ -119,8 +118,6 @@ try:
                       getattr(report, 'ept', 'nan'), "\t",
                       getattr(report, 'speed', 'nan'), "\t",
                       getattr(report, 'climb', 'nan'), "\t")
-        else:
-            print("Waiting for GPS data...")
         time.sleep(1)
     print("Finished Looking for GPS. GPS device found = "+str(got_gps_fix))
     if UTCtime:
@@ -158,7 +155,6 @@ try:
                 set_GPS("/home/pi/Desktop/Mothbox/controls.txt", "n/a", "n/a")
 
     else:
-        print("No UTC time received before timeout")
         set_GPS("/home/pi/Desktop/Mothbox/controls.txt", "n/a", "n/a")
 
 

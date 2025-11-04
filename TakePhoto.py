@@ -84,22 +84,14 @@ GPIO.setup(debug_pin, GPIO.IN)
 
 # Check for connection
 if debug_connected_to_ground():
-    print("GPIO pin", debug_pin, "DEBUG connected to ground.")
     mode = "DEBUG"
-else:
-    print("GPIO pin", debug_pin, "DEBUG NOT connected to ground.")
 
 # Check for connection
 if off_connected_to_ground():
-    print("GPIO pin", off_pin, "OFF PIN connected to ground.")
     mode = "OFF"  # this check comes second as the OFF state should override the DEBUG state in case both are attached
-else:
-    print("GPIO pin", off_pin, "OFF PIN NOT connected to ground.")
-
-print("Current Mothbox MODE: ", mode)
 
 if(mode=="OFF"):
-    print("no photo!")
+    print("MODE OFF no photo!")
     #GPIO.cleanup()
     quit()
 
@@ -147,10 +139,8 @@ def set_last_calibration(filepath):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("LastCalibration"):
                 file.write("LastCalibration="+str(time.time())+"\n")  # Replace with False
-                print("reset last calibration")
             else:
                 file.write(line)  # Keep other lines unchanged
 
@@ -158,13 +148,10 @@ def set_last_calibration(filepath):
 def flashOn():
     GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
     GPIO.output(Relay_Ch2,GPIO.LOW)
-    print("Flash On\n")
     
 def flashOff():
     GPIO.output(Relay_Ch2,GPIO.HIGH)
     GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
-
-    print("Flash Off\n")
 
   
 def load_camera_settings():
@@ -197,12 +184,10 @@ def load_camera_settings():
                 found=1
                 break
             else:
-                print("No external settings here...")
                 file_path=default_path
 
     if(found==0):
         #redundant but being extra safe
-        print("No external settings, using internal csv")
         file_path=default_path
     
     #set the global path to the one we chose
@@ -241,11 +226,8 @@ def load_camera_settings():
                     try:
                         value = int(value)
                         middleexposure = value
-                        print("middleexposurevalue ", middleexposure)
                     except ValueError:
                         raise ValueError(f"Invalid value for ExposureTime: {value}")
-                else:
-                    print(f"Warning: Unknown setting: {setting}. Ignoring.")
 
                 the_camera_settings[setting] = value
 
@@ -290,33 +272,7 @@ def update_camera_settings(filename, new_settings):
     writer.writeheader()
     writer.writerows(updated_data)
 
-def get_serial_number():
-  """
-  This function retrieves the Raspberry Pi's serial number from the CPU info file.
-  """
-  try:
-    with open('/proc/cpuinfo', 'r') as cpuinfo:
-      for line in cpuinfo:
-        if line.startswith('Serial'):
-          return line.split(':')[1].strip()
-  except (IOError, IndexError):
-    return None
 
-def stop_cron():
-    """Runs the command 'service cron stop' to stop the cron service."""
-    try:
-        subprocess.run(["sudo", "service", "cron", "stop"], check=True)
-        print("Cron service stopped successfully.")
-    except subprocess.CalledProcessError as error:
-        print("Error stopping cron service:", error)
-
-def start_cron():
-    """Runs the command 'service cron stop' to stop the cron service."""
-    try:
-        subprocess.run(["sudo", "service", "cron", "start"], check=True)
-        print("Cron service started successfully.")
-    except subprocess.CalledProcessError as error:
-        print("Error starting cron service:", error)
         
 def print_af_state(request):
     md = request.get_metadata()
@@ -333,7 +289,7 @@ def run_calibration():
 
     
     #time.sleep(1)
-    picam2.pre_callback = print_af_state
+    #picam2.pre_callback = print_af_state
     
     
     time.sleep(2)
@@ -348,23 +304,12 @@ def run_calibration():
 
     time.sleep(1)
 
-    print("!!! Autofocusing !!!")
     afstart = time.time()
     flashOn()
     picam2.start(show_preview=False)
     #picam2.start()
     
     for i in range(5):
-        if i == 15:
-            pass
-            #picam2.set_controls({'AnalogueGain': 4.0})
-            #picam2.set_controls({"ExposureValue":-4.0})# Floating point number between -8.0 and 8.0
-
-        elif i == 50:
-            pass
-            #picam2.set_controls({'AnalogueGain': 1.2})
-            #picam2.set_controls({"ExposureValue":8.0})# Floating point number between -8.0 and 8.0
-
         md = picam2.capture_metadata()
         print(i, "Calibrating for BRIGHTNESS--  exposure: ", md['ExposureTime'],"  gain: ", md['AnalogueGain'], "  Lensposition:", md['LensPosition'])
     
@@ -379,7 +324,6 @@ def run_calibration():
 
     #picam2.set_controls({"AfMode": 2})
     #time.sleep(7)
-    print("Running autofocus...")
     #picam2.start(show_preview=True, ) #preview has to be on for some reason to work
     success = picam2.autofocus_cycle()
 
@@ -496,7 +440,6 @@ def takePhoto_Manual():
    
     middleexposure = camera_settings["ExposureTime"]
     exposure_times = list_exposuretimes(middleexposure, num_photos,exposuretime_width)
-    print(exposure_times)
     
     time.sleep(1)
     picam2.start()
@@ -506,7 +449,7 @@ def takePhoto_Manual():
     start = time.time()
 
     if(num_photos>2):
-        print("About to take HDR photo:  ",timestamp)
+        print("About to take HDR photo:  ",timestamp, exposure_times)
     else:
         print("About to take single photo:  ",timestamp)
 
@@ -521,7 +464,6 @@ def takePhoto_Manual():
         #middleexposure = camera_settings["ExposureTime"]
         
         picam2.set_controls({"ExposureTime":exposure_times[i] })
-        print("exp  ",exposure_times[i],"  ",i)
         #picam2.set_controls({"NoiseReductionMode":controls.draft.NoiseReductionModeEnum.HighQuality})
         picam2.start() #need to restart camera or wait a couple frames for settings to change
 
@@ -545,7 +487,6 @@ def takePhoto_Manual():
         request.release()
 
         picam2.stop()
-        print("picture take time: "+str(flashtime))
         
     # Saving loop (can be done later)
     i=0
@@ -561,7 +502,6 @@ def takePhoto_Manual():
           folderPath = create_dated_folder(folderPath)
           
           
-          print(ImageFileType)
           if ImageFileType==1: #png
               filepath = folderPath+computerName+"_"+timestamp+"_HDR"+str(i)+".png"
           elif ImageFileType==0: #jpeg
@@ -571,7 +511,6 @@ def takePhoto_Manual():
 
         
           #print(exif_data) #This is a LOT of data
-          print(camera_settings.get("LensPosition"))
           #https://github.com/hMatoba/Piexif/blob/3422fbe7a12c3ebcc90532d8e1f4e3be32ece80c/piexif/_exif.py#L406
           #https://piexif.readthedocs.io/en/latest/functions.html#dump
           zeroth_ifd = {piexif.ImageIFD.Make: u"MothboxV4",
@@ -617,7 +556,6 @@ def determinePiModel():
   cpuinfo.close()
 
   # Execute function based on model
-  print(model)
   if model:  # Check if model was found
     if "Pi 4" in model:  # Model identifier for Raspberry Pi 4
       themodel=4
@@ -648,18 +586,17 @@ def get_storage_info(path):
 
 #---------------MAIN CODE--------------------- #
 
+
 print("----------------- STARTING TAKEPHOTO-------------------")
 now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
 
-print(f"Current time: {formatted_time}")
-
+print(f"Current time: {formatted_time} Mode: {mode}")
 
 #First check and see if we have enough storage left to keep taking photos, or else do nothing
 # Get total and available space on desktop and external storage
 desktop_total, desktop_available = get_storage_info(desktop_path)
-print("Desktop Total    Storage: \t" + str(desktop_total))
-print("Desktop Available Storage: \t" + str(desktop_available))
+print(f"Desktop Storage: Total {round(desktop_total/1024**3, 2)}GB Available {round(desktop_available/1024**3, 2)}GB ")
 
 x=extra_photo_storage_minimum
 
@@ -684,14 +621,6 @@ if(rpiModel==5):
     height=6944
 
 
-#I don't really know why we need this below code, but it's here. it may have been an earlier attempt to find the pi model
-if platform.system() == "Windows":
-	print(platform.uname().node)
-else:
-	#computerName = os.uname()[1]
-	print(os.uname()[1])   # doesnt work on windows
-
-
 #HDR Controls
 num_photos = 3
 exposuretime_width = 18000
@@ -709,7 +638,6 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(Relay_Ch2,GPIO.OUT)
 GPIO.setup(Relay_Ch3,GPIO.OUT)
 
-print("Setup The Relay Module is [success]")
 GPIO.output(Relay_Ch2,GPIO.HIGH)
 GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
 
@@ -765,17 +693,13 @@ picam2 = Picamera2()
 
 current_time = int(time.time())
 timesincelastcalibration= current_time - LastCalibration
-print("Last calibration was   ",timesincelastcalibration,"  seconds ago \n Autocalibration period is   ", AutoCalibrationPeriod)
+print("Last calibration was   ",timesincelastcalibration,"  seconds ago Autocalibration period is   ", AutoCalibrationPeriod)
 recalibrated= False
 if AutoCalibration and (timesincelastcalibration > AutoCalibrationPeriod):
-    print("Do Autocalibrate")
     recalibrated=True
-    print(current_time)
     #picam2.configure(preview_config)
     #picam2.configure(capture_config_fastAuto)
     run_calibration()
-else:
-    print("Don't Autocalibration")
 
 # ------ Prepare to take actual photo -----------
 #reload camera settings after possible calibration
@@ -810,7 +734,6 @@ if camera_settings:
 picam2.start()
 time.sleep(1)
 
-print("cam started");
 
 picam2.stop()
 
