@@ -63,7 +63,6 @@ def set_GPStime(filepath, gpstime):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("gpstime"):
                 file.write("gpstime=" + str(gpstime) + "\n")  # Replace with False
                 #print("set gpstime " + str(gpstime))
@@ -76,7 +75,6 @@ def set_UTCoff(filepath, UTC):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("UTCoff"):
                 file.write("UTCoff=" + str(UTC) + "\n")  # Replace with False
                 #print("set UTCoff" + str(UTC))    
@@ -88,7 +86,6 @@ def set_GPS(filepath, lat,lon):
 
     with open(filepath, "w") as file:
         for line in lines:
-            print(line)
             if line.startswith("lat"):
                 file.write("lat=" + str(lat) + "\n")  # Replace with False
                 #print("set lat" + str(lat))

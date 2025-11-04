@@ -522,7 +522,6 @@ def run_shutdown_pi5_FAST():
     if "utc_off" in settings:
         del settings["utc_off"]
 
-    #print(settings)
 
     # don't need to modify the hours to UTC like we do for pijuice
     # Build Cron expression
@@ -628,7 +627,7 @@ def add_wifi_credentials(ssid, password):
     # Add the new connection with nmcli
     command = ["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", password]
     try:
-        subprocess.run(command, check=True)
+        subprocess.run(command, check=True, capture_output=True)
         print(f"Successfully added WiFi network: {ssid}")
     except subprocess.CalledProcessError as error:
         print(f"Failed to connect to WiFi network: {ssid}. Error: {error}")
@@ -869,7 +868,6 @@ if rpiModel == 4:
     modified_dict = modify_hours(
         settings.copy(), utc_off
     )  # Modify a copy to avoid unintended modification
-    print(modified_dict)
     settings = modified_dict
     if settings:
         pj.rtcAlarm.SetAlarm(settings)
