@@ -757,10 +757,9 @@ if rpiModel == 5:
     desired_settings = {"POWER_OFF_ON_HALT": "1", "WAKE_ON_GPIO": "0"}
     current_settings = check_eeprom_settings()
 
-    if all(
+    if not all(
         current_settings.get(key) == value for key, value in desired_settings.items()
     ):
-    else:
         for key, value in desired_settings.items():
             if key not in current_settings or current_settings[key] != value:
                 current_settings[key] = value
