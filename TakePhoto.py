@@ -26,8 +26,6 @@ from picamera2 import Picamera2, Preview
 from libcamera import controls
 from libcamera import Transform
 
-import time
-import datetime
 from datetime import datetime, timedelta
 computerName = "mothboxNOTSET"
 import cv2
@@ -42,67 +40,19 @@ import subprocess
 
 #GPIO
 import RPi.GPIO as GPIO
-import time
 
 import os, platform
 from pathlib import Path
 
+import .CheckGPIOPin
+
 Picamera2.set_logging(Picamera2.WARNING)
 
-#IF the mothbox is supposed to be off, don't take a photo!
-GPIO.setmode(GPIO.BCM)
-
-# Function to check for connection to ground
-def off_connected_to_ground():
-    # Set an internal pull-up resistor (optional, some circuits might have one already)
-    GPIO.setup(off_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    # Read the pin value
-    pin_value = GPIO.input(off_pin)
-
-    # If pin value is LOW (0), then it's connected to ground
-    return pin_value == 0
-
-
-def debug_connected_to_ground():
-    # Set an internal pull-up resistor (optional, some circuits might have one already)
-    GPIO.setup(debug_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    # Read the pin value
-    pin_value = GPIO.input(debug_pin)
-
-    # If pin value is LOW (0), then it's connected to ground
-    return pin_value == 0
-
-
-
-# Define GPIO pin for checking
-off_pin = 16
-debug_pin = 12
-mode = "ACTIVE"  # possible modes are OFF or DEBUG or ARMED
-# Set GPIO pin as input
-GPIO.setup(off_pin, GPIO.IN)
-GPIO.setup(debug_pin, GPIO.IN)
-
-# Check for connection
-if debug_connected_to_ground():
-    mode = "DEBUG"
-
-# Check for connection
-if off_connected_to_ground():
-    mode = "OFF"  # this check comes second as the OFF state should override the DEBUG state in case both are attached
+mode = CheckGPIOPin.mode()
 
 if(mode=="OFF"):
     print("MODE OFF no photo!")
-    #GPIO.cleanup()
     quit()
-
-
-
-
-
-
-
 
 
 
