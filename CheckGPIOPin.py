@@ -11,7 +11,7 @@ debug_pin = 12
 
 # Function to check for connection to ground
 def pin_connected_to_ground(pin):
-  for i in range(3):
+  for i in range(4):
       # Retry loop for caught errors only
       try:
           GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -25,7 +25,6 @@ def pin_connected_to_ground(pin):
         time.sleep(0.5)
       finally:
         GPIO.cleanup()
-  }
 
 def mode():
   mode= "ACTIVE" # possible modes are OFF or DEBUG or ACTIVE
