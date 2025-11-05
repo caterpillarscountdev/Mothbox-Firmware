@@ -44,8 +44,9 @@ import RPi.GPIO as GPIO
 import os, platform
 from pathlib import Path
 
-import .CheckGPIOPin
+import CheckGPIOPin
 
+os.environ["LIBCAMERA_LOG_LEVELS"] = "WARN"
 Picamera2.set_logging(Picamera2.WARNING)
 
 mode = CheckGPIOPin.mode()
