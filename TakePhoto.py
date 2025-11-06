@@ -377,14 +377,7 @@ def takePhoto_Manual():
     #lastfivedigits=serial_number[-5:]
 
 
-    ''''''
-    if camera_settings:
-        picam2.set_controls(camera_settings)
-    else:
-        print("can't set controls")
-    ''''''
     min_exp, max_exp, default_exp = picam2.camera_controls["ExposureTime"]
-    #print(min_exp,"   ", max_exp,"   ", default_exp)
 
 
     #important note, to actually 100% lock down an AWB you need to set ColourGains! (0,0) works well for plain white LEDS
@@ -678,17 +671,11 @@ if(num_photos<1 or num_photos==2):
 capture_main = {"size": (width, height), "format": "RGB888", }
 capture_config = picam2.create_still_configuration(main=capture_main,raw=None, lores=None)
 capture_config_flipped =  picam2.create_still_configuration(main=capture_main, transform=Transform(vflip=True, hflip=True), raw=None, lores=None)
-picam2.configure(capture_config)
 
 
 if camera_settings:
     picam2.set_controls(camera_settings)
 
-picam2.start()
-time.sleep(1)
-
-
-picam2.stop()
 
 if(VerticalFlip):
     picam2.configure(capture_config_flipped)
@@ -698,8 +685,6 @@ else:
 time.sleep(.5)
 takePhoto_Manual()
 
-
-picam2.stop()
 
 #cannot call GPIO cleanup here because it will kill the relay turning on the attractor
 GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that

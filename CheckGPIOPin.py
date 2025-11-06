@@ -12,6 +12,7 @@ def pin_connected_to_ground(pin):
   for i in range(4):
     # Retry loop for caught errors only
     try:
+      GPIO.setwarnings(False)
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
       
@@ -37,5 +38,3 @@ def mode():
 if __name__ == "__main__":
     print(mode())
 
-    # Clean up GPIO on exit
-    GPIO.cleanup()

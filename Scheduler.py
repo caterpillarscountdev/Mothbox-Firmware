@@ -716,7 +716,8 @@ def set_cron_for_attract_camera(settings):
             if "," in minute:
                 i.minute.parse(minute)
             else:
-                i.minute.during(int(minute), min(int(minute)+int(settings["runtime"]), 59))
+                # first few minutes of runtime to ensure close to wakeup 
+                i.minute.during(int(minute), min(int(minute)+int(settings["runtime"]), 5))
                 i.hour.parse(hour)
                 i.dow.parse(weekday)
     except ValueError as e:
