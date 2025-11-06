@@ -671,10 +671,17 @@ if(num_photos<1 or num_photos==2):
 capture_main = {"size": (width, height), "format": "RGB888", }
 capture_config = picam2.create_still_configuration(main=capture_main,raw=None, lores=None)
 capture_config_flipped =  picam2.create_still_configuration(main=capture_main, transform=Transform(vflip=True, hflip=True), raw=None, lores=None)
-
-
+picam2.configure(capture_config)
+ 
+ 
 if camera_settings:
     picam2.set_controls(camera_settings)
+ 
+picam2.start()
+time.sleep(1)
+
+
+picam2.stop()
 
 
 if(VerticalFlip):
