@@ -181,7 +181,11 @@ def load_camera_settings():
                         middleexposure = value
                     except ValueError:
                         raise ValueError(f"Invalid value for ExposureTime: {value}")
-
+                elif setting == "ColourGains":
+                    try:
+                        value = tuple(map(float, value.split(";")[:2]))
+                    except ValueError:
+                        value = (2.259, 1.4)
                 the_camera_settings[setting] = value
 
             return the_camera_settings
@@ -368,7 +372,7 @@ def create_dated_folder(base_path):
   return folder_path+"/"
 
 def takePhoto_Manual():
-    global middleexposure, calib_lens_position, calib_exposure
+    global middleexposure, calib_lens_position, calib_exposure, cgains
     # LensPosition: Manual focus, Set the lens position.
     now = datetime.now()
     timestamp = now.strftime("%Y_%m_%d__%H_%M_%S")  # Adjust the format as needed
@@ -381,7 +385,7 @@ def takePhoto_Manual():
 
 
     #important note, to actually 100% lock down an AWB you need to set ColourGains! (0,0) works well for plain white LEDS
-    cgains = 2.25943877696990967, 1.500129925489425659
+    #cgains = 2.25943877696990967, 1.500129925489425659
     picam2.set_controls({"ColourGains": cgains})
    
     middleexposure = camera_settings["ExposureTime"]
@@ -625,7 +629,7 @@ calib_lens_position=6
 
 calib_lens_position = camera_settings["LensPosition"]
 calib_exposure = camera_settings["ExposureTime"]
-
+cgains = camera_settings["ColourGains"]
 
 AutoCalibration = camera_settings.pop("AutoCalibration",1) #defaults to what is set above if not in the files being read
 AutoCalibrationPeriod = int(camera_settings.pop("AutoCalibrationPeriod",1000))
