@@ -946,7 +946,7 @@ set_wakeup_alarm(next_epoch_time)
 enable_onlyflash()
 enable_attractoffphoto()
 
-if newwifidetected:
+if newwifidetected and ssid:
     add_wifi_credentials(ssid, wifipass)
 
 

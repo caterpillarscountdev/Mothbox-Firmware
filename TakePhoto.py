@@ -393,7 +393,6 @@ def takePhoto_Manual():
 
     #important note, to actually 100% lock down an AWB you need to set ColourGains! (0,0) works well for plain white LEDS
     #cgains = 2.25943877696990967, 1.500129925489425659
-    cgains = 2.259,1.4
     picam2.set_controls({"ColourGains": cgains})
    
     middleexposure = camera_settings["ExposureTime"]
@@ -637,7 +636,7 @@ calib_lens_position=6
 
 calib_lens_position = camera_settings["LensPosition"]
 calib_exposure = camera_settings["ExposureTime"]
-cgains = camera_settings["ColourGains"]
+cgains = camera_settings.get("ColourGains", (2.259,1.4))
 
 AutoCalibration = camera_settings.pop("AutoCalibration",1) #defaults to what is set above if not in the files being read
 AutoCalibrationPeriod = int(camera_settings.pop("AutoCalibrationPeriod",1000))
