@@ -331,7 +331,7 @@ def load_settings(filename):
         print("No external settings, using internal csv")
 
 
-    global runtime, utc_off, ssid, wifipass, newwifidetected, onlyflash
+    global runtime, utc_off, ssid, wifipass, newwifidetected, onlyflash, attractoffphoto
     utc_off = 0  # this is the offsett from UTC time we use to set the alarm
     runtime = 0  # this is how long to run the mothbox in minutes for once we wakeup 0 is forever
     # newwifidetected=False
@@ -369,7 +369,9 @@ def load_settings(filename):
                     newwifidetected = True
                     wifipass = value
                 elif setting == "onlyflash":
-                    onlyflash = int(value)
+                    onlyflash = value.lower() in ['1', 'true']
+                elif setting == "attractOffPhoto":
+                    attractoffphoto = value.lower() in ['1', 'true']
 
                 settings[setting] = value
 
@@ -601,7 +603,7 @@ def enable_onlyflash():
     with open("/home/pi/Desktop/Mothbox/controls.txt", "w") as file:
         for line in lines:
             if line.startswith("OnlyFlash="):
-                if onlyflash == 1:
+                if onlyflash:
                     file.write("OnlyFlash=True\n")  # Replace with False
                     print("enabling onlyflash in controls.txt")
                 else:
@@ -609,6 +611,33 @@ def enable_onlyflash():
 
             else:
                 file.write(line)  # Keep other lines unchanged
+
+def enable_attractoffphoto():
+    """Enable Flash"""
+    with open("/home/pi/Desktop/Mothbox/controls.txt", "r") as file:
+        lines = file.readlines()
+
+    with open("/home/pi/Desktop/Mothbox/controls.txt", "w") as file:
+        wrote = False
+        for line in lines:
+            if line.startswith("AttractOffPhoto="):
+                wrote = True
+                if attractoffphoto:
+                    file.write("AttractOffPhoto=True\n")  # Replace with False
+                    print("enabling AttractOffPhoto in controls.txt")
+                else:
+                    file.write("AttractOffPhoto=False\n")  # Replace with False
+
+            else:
+                file.write(line)  # Keep other lines unchanged
+        if not wrote:
+            if attractoffphoto:
+                file.write("AttractOffPhoto=True\n")  # Replace with False
+                print("enabling AttractOffPhoto in controls.txt")
+            else:
+                file.write("AttractOffPhoto=False\n")  # Replace with False
+
+            
 
 
 def stopcron():
@@ -836,6 +865,7 @@ runtime = (
     0  # this is how long to run the mothbox in minutes for once we wakeup 0 is forever
 )
 onlyflash = 0
+attractoffphoto = 0
 
 # need to add a delay to let the external drives mount!
 #time.sleep(10)
@@ -914,6 +944,7 @@ set_wakeup_alarm(next_epoch_time)
 # Scheduling complete, now set all the other settings
 # Toggle a mode where the flash lights are always on
 enable_onlyflash()
+enable_attractoffphoto()
 
 if newwifidetected:
     add_wifi_credentials(ssid, wifipass)

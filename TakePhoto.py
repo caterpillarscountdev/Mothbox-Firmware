@@ -97,15 +97,22 @@ def set_last_calibration(filepath):
             else:
                 file.write(line)  # Keep other lines unchanged
 
+Relay_Ch2 = 20
+Relay_Ch3 = 21
+                
 
 def flashOn():
-    GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
     GPIO.output(Relay_Ch2,GPIO.LOW)
     
 def flashOff():
     GPIO.output(Relay_Ch2,GPIO.HIGH)
-    GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
 
+def attractOn():
+    GPIO.output(Relay_Ch3,GPIO.LOW)
+    
+def attractOff():
+    GPIO.output(Relay_Ch3,GPIO.HIGH)
+    
   
 def load_camera_settings():
     """
@@ -386,6 +393,7 @@ def takePhoto_Manual():
 
     #important note, to actually 100% lock down an AWB you need to set ColourGains! (0,0) works well for plain white LEDS
     #cgains = 2.25943877696990967, 1.500129925489425659
+    cgains = 2.259,1.4
     picam2.set_controls({"ColourGains": cgains})
    
     middleexposure = camera_settings["ExposureTime"]
@@ -420,11 +428,15 @@ def takePhoto_Manual():
         time.sleep(exposureset_delay)#need some time for the settings to sink into the camera)
         
         flashOn()
+        if attractOffPhoto:
+            attractOff()
         request = picam2.capture_request(flush=True)
 
 
         if not onlyflash:
             flashOff()
+            if attractOffPhoto:
+                attractOn()
         flashtime=time.time()-start
 
         pilImage = request.make_image("main")
@@ -577,33 +589,29 @@ exposuretime_width = 18000
 middleexposure=500 # 500 #minimum exposure time for Hawkeye camera 64mp arducam
 
 
-Relay_Ch1 = 26
-Relay_Ch2 = 20
-Relay_Ch3 = 21
-
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
-#GPIO.setup(Relay_Ch1,GPIO.OUT)
 GPIO.setup(Relay_Ch2,GPIO.OUT)
 GPIO.setup(Relay_Ch3,GPIO.OUT)
 
-GPIO.output(Relay_Ch2,GPIO.HIGH)
-GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
+flashOff()
 
-global onlyflash
 onlyflash=False
-
+attractOffPhoto=False
 
 
 control_values_fpath = "/home/pi/Desktop/Mothbox/controls.txt"
 control_values = get_control_values(control_values_fpath)
 onlyflash = control_values.get("OnlyFlash", "True").lower() == "true"
+attractOffPhoto = control_values.get("AttractOffPhoto", "True").lower() == "true"
 LastCalibration = float(control_values.get("LastCalibration", 0))
 computerName = control_values.get("name", "wrong")
 
 if(onlyflash):
     print("operating in always on flash mode")
+if(attractOffPhoto):
+    print("attract off during photo capture")
 
 
 
@@ -698,8 +706,6 @@ takePhoto_Manual()
 
 
 #cannot call GPIO cleanup here because it will kill the relay turning on the attractor
-GPIO.output(Relay_Ch3,GPIO.LOW) #might as well ensure attract is on because new wiring dictates that
-
     
 quit()
 
