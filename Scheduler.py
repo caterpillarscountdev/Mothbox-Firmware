@@ -467,6 +467,12 @@ def run_shutdown_pi5():
         f"Next wakeup event scheduled for: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(next_epoch_time))}"
     )
     set_wakeup_alarm(next_epoch_time)
+
+
+    # Copy metadata here at end of run
+    subprocess.run(["/home/pi/Desktop/Mothbox/CopyMetadata.py"])
+
+    
     '''
     # GPS check / 10 second delay
     print("Checking GPS (if available) for 10 seconds")
