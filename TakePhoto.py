@@ -102,15 +102,19 @@ Relay_Ch3 = 21
                 
 
 def flashOn():
+    GPIO.setup(Relay_Ch2,GPIO.OUT)
     GPIO.output(Relay_Ch2,GPIO.LOW)
     
 def flashOff():
+    GPIO.setup(Relay_Ch2,GPIO.OUT)
     GPIO.output(Relay_Ch2,GPIO.HIGH)
 
 def attractOn():
+    GPIO.setup(Relay_Ch3,GPIO.OUT)
     GPIO.output(Relay_Ch3,GPIO.LOW)
     
 def attractOff():
+    GPIO.setup(Relay_Ch3,GPIO.OUT)
     GPIO.output(Relay_Ch3,GPIO.HIGH)
     
   
@@ -270,6 +274,8 @@ def run_calibration():
 
     afstart = time.time()
     flashOn()
+    if attractOffPhoto:
+        attractOff()
     picam2.start(show_preview=False)
     #picam2.start()
     
@@ -293,6 +299,8 @@ def run_calibration():
 
     #picam2.pre_callback = None
     flashOff()
+    if attractOffPhoto and not onlyflash:
+        attractOn()
     print("Autofocus completed! "+str(time.time()-afstart))
     md = picam2.capture_metadata()
     calib_lens_position = md['LensPosition']
@@ -590,9 +598,6 @@ middleexposure=500 # 500 #minimum exposure time for Hawkeye camera 64mp arducam
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
-
-GPIO.setup(Relay_Ch2,GPIO.OUT)
-GPIO.setup(Relay_Ch3,GPIO.OUT)
 
 flashOff()
 
