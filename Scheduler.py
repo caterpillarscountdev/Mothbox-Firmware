@@ -773,6 +773,9 @@ def set_cron_for_attract_camera(settings):
         i.minute.every(interval)
         i.hour.parse(hour)
         i.dow.parse(weekday)
+    for i in c.find_command("UploadMMM"):
+        if not i.command.startswith("cd /home/pi/Desktop"):
+            i.set_command("cd /home/pi/Desktop/Mothbox/Web && ./UploadMMM.py >> /home/pi/Desktop/Mothbox/logs/Upload_log.txt 2>&1")
     try:
         for i in c.find_command("Attract_On"):
             if "," in minute:
