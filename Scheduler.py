@@ -331,7 +331,7 @@ def load_settings(filename):
         print("No external settings, using internal csv")
 
 
-    global runtime, utc_off, ssid, wifipass, newwifidetected, onlyflash, attractoffphoto
+    global runtime, utc_off, ssid, wifipass, newwifidetected, onlyflash, attractoffphoto, attracttwo
     utc_off = 0  # this is the offsett from UTC time we use to set the alarm
     runtime = 0  # this is how long to run the mothbox in minutes for once we wakeup 0 is forever
     # newwifidetected=False
@@ -370,6 +370,8 @@ def load_settings(filename):
                     wifipass = value
                 elif setting == "onlyflash":
                     onlyflash = value.lower() in ['1', 'true']
+                elif setting == "attracttwo":
+                    attracttwo = value.lower() in ['1', 'true']
                 elif setting == "attractOffPhoto":
                     attractoffphoto = value.lower() in ['1', 'true']
 
@@ -643,6 +645,31 @@ def enable_attractoffphoto():
             else:
                 file.write("AttractOffPhoto=False\n")  # Replace with False
 
+def enable_attracttwo():
+    """Enable Attract Two"""
+    with open("/home/pi/Desktop/Mothbox/controls.txt", "r") as file:
+        lines = file.readlines()
+
+    with open("/home/pi/Desktop/Mothbox/controls.txt", "w") as file:
+        wrote = False
+        for line in lines:
+            if line.startswith("AttractTwo="):
+                wrote = True
+                if attracttwo:
+                    file.write("AttractTwo=True\n")  # Replace with False
+                    print("enabling AttractTwo in controls.txt")
+                else:
+                    file.write("AttractTwo=False\n")  # Replace with False
+
+            else:
+                file.write(line)  # Keep other lines unchanged
+        if not wrote:
+            if attracttwo:
+                file.write("AttractTwo=True\n")  # Replace with False
+                print("enabling AttractTwo in controls.txt")
+            else:
+                file.write("AttractTwo=False\n")  # Replace with False
+                
             
 
 
@@ -872,6 +899,7 @@ runtime = (
 )
 onlyflash = 0
 attractoffphoto = 0
+attracttwo = 0
 
 # need to add a delay to let the external drives mount!
 #time.sleep(10)
@@ -951,6 +979,7 @@ set_wakeup_alarm(next_epoch_time)
 # Toggle a mode where the flash lights are always on
 enable_onlyflash()
 enable_attractoffphoto()
+enable_attracttwo()
 
 if newwifidetected and ssid:
     add_wifi_credentials(ssid, wifipass)

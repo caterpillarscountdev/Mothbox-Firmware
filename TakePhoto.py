@@ -97,6 +97,7 @@ def set_last_calibration(filepath):
             else:
                 file.write(line)  # Keep other lines unchanged
 
+Relay_Ch1 = 26
 Relay_Ch2 = 20
 Relay_Ch3 = 21
                 
@@ -110,10 +111,15 @@ def flashOff():
     GPIO.output(Relay_Ch2,GPIO.HIGH)
 
 def attractOn():
+    if attractTwo:
+        GPIO.setup(Relay_Ch1,GPIO.OUT)
+        GPIO.output(Relay_Ch1,GPIO.LOW)
     GPIO.setup(Relay_Ch3,GPIO.OUT)
     GPIO.output(Relay_Ch3,GPIO.LOW)
     
 def attractOff():
+    GPIO.setup(Relay_Ch1,GPIO.OUT)
+    GPIO.output(Relay_Ch1,GPIO.HIGH)
     GPIO.setup(Relay_Ch3,GPIO.OUT)
     GPIO.output(Relay_Ch3,GPIO.HIGH)
     
@@ -608,6 +614,7 @@ attractOffPhoto=False
 control_values_fpath = "/home/pi/Desktop/Mothbox/controls.txt"
 control_values = get_control_values(control_values_fpath)
 onlyflash = control_values.get("OnlyFlash", "True").lower() == "true"
+attractTwo = control_values.get("AttractTwo", "False").lower() == "true"
 attractOffPhoto = control_values.get("AttractOffPhoto", "True").lower() == "true"
 LastCalibration = float(control_values.get("LastCalibration", 0))
 computerName = control_values.get("name", "wrong")

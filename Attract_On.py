@@ -11,8 +11,9 @@ now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")  # Adjust the format as needed
 
 
-global onlyflash
+global onlyflash, attracttwo
 onlyflash=False
+attracttwo=False
 
 Relay_Ch1 = 26
 Relay_Ch2 = 20
@@ -45,12 +46,14 @@ def AttractOn():
     else:
         GPIO.output(Relay_Ch2,GPIO.HIGH)
 
-    GPIO.output(Relay_Ch1,GPIO.LOW)
+    if attracttwo:
+        GPIO.output(Relay_Ch1,GPIO.LOW)
     print(f"{formatted_time} Attract Lights On")
     
 
 control_values = get_control_values("/home/pi/Desktop/Mothbox/controls.txt")
-onlyflash = control_values.get("OnlyFlash", "True").lower() == "true"
+onlyflash = control_values.get("OnlyFlash", "False").lower() == "true"
+attracttwo = control_values.get("AttractTwo", "False").lower() == "true"
 AttractOn()
 
 
