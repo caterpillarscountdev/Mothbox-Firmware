@@ -1056,6 +1056,7 @@ elif mode == "DEBUG":
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
     subprocess.run([debug_script_path])
     stopcron()
+    GPIO.cleanup()
     print("Scheduling upload to run every 10 minutes")
     schedule_upload(10)
 
