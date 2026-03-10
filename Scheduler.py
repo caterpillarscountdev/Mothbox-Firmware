@@ -766,9 +766,8 @@ def set_cron_for_attract_camera(settings):
     c = crontab.CronTab(user="pi")
     try:
         for i in c.find_command("UploadMMM"):
-            # Remove from cron by comment
-            c.enable(False)
-
+            if not i.command.startswith("cd /home/pi/Desktop"):
+                i.set_command("cd /home/pi/Desktop/Mothbox/Web && ./UploadMMM.py >> /home/pi/Desktop/Mothbox/logs/Upload_log.txt 2>&1")
         
         interval = settings.get("camera_interval", 1)
         minute = settings["minute"].split(";")
@@ -1031,10 +1030,8 @@ if mode == "OFF":
         run_shutdown_pi5()
     # quit()
 elif mode == "DEBUG":
-    print("System is in DEBUG mode - keeping power and wifi on and turning cron off")
-    # Define the path to your script (replace 'path/to/script' with the actual path)
+    print("System is in DEBUG mode - keeping power and wifi on")
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
-    # Call the script using subprocess.run
     subprocess.run([debug_script_path])
     # stopcron()
 
