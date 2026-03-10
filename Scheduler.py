@@ -807,15 +807,24 @@ def set_cron_for_attract_camera(settings):
         takePhotoNext.hour.on(*next_hour)
         takePhotoNext.dow.on(*next_day)
 
-        for i in c.find_command("Attract_On"):
-            if len(minute) > 1:
-                i.minute.on(minute)
-            else:
-                m = int(minute[0])
-                # first few minutes of runtime to ensure close to wakeup 
-                i.minute.during(m, min(m+int(settings["runtime"]), 5))
-                i.hour.on(*(hour+next_hour))
-                i.dow.on(*(weekday+next_day))
+        attractOn = list(c.find_command("Attract_On"))
+        attractOnFirst = attractOn[0]
+        if len(attractOn) < 2:
+            # Need two cron lines for before/after midnight
+            attractOnNext = c.new(attractOnFirst.command, attractOnFirst.comment)
+        else:
+            attractOnNext = attractOn[1]
+
+        m = int(minute[0])
+        # first few minutes of runtime to ensure close to wakeup
+        attractOnFirst.minute.during(m, min(m+int(settings["runtime"]), 5))
+        attractOnNext.minute.during(m, min(m+int(settings["runtime"]), 5))
+
+        attractOnFirst.hour.on(*hour)
+        attractOnFirst.dow.on(*weekday)
+
+        attractOnNext.hour.on(*next_hour)
+        attractOnNext.dow.on(*next_weekday)
     except ValueError as e:
         print("Problem parsing cron settings", e)
     c.write()
