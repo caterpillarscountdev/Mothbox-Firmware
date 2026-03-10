@@ -779,7 +779,7 @@ def set_cron_for_attract_camera(settings):
     try:
         for i in c.find_command("UploadMMM"):
             # Remove from cron by comment
-            c.enable(False)
+            i.enable(False)
 
         
         interval = settings.get("camera_interval", 1)
