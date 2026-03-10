@@ -787,9 +787,9 @@ def set_cron_for_attract_camera(settings):
         hour = settings["hour"].split(";")
         weekday = settings["weekday"].split(";")
 
-        next_day = [ (x+1)%7 for x in weekday ]
-        next_hour = [x for x in hour if x < 8]
-        hour = [x for x in hour if x >= 8]
+        next_day = [ (int(x)+1)%7 for x in weekday ]
+        next_hour = [x for x in hour if int(x) < 8]
+        hour = [x for x in hour if int(x) >= 8]
 
         takePhoto = list(c.find_command("TakePhoto"))
         takePhotoFirst = takePhoto[0]
