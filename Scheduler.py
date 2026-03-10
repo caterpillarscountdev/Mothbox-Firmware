@@ -418,7 +418,19 @@ def schedule_shutdown(minutes):
             time.sleep(1)
     except KeyboardInterrupt:
         print("Shutdown scheduling stopped.")
+        
+def schedule_upload(minutes):
+    schedule.every(minutes).minutes.do(run_upload)
 
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Upload scheduling stopped.")
+
+def run_upload():
+    subprocess.run("cd /home/pi/Desktop/Mothbox/Web && ./UploadMMM.py >> /home/pi/Desktop/Mothbox/logs/Upload_log.txt 2>&1", shell=True)
 
 def run_shutdown_pi4():
     """Executes the '/home/pi/Desktop/Mothbox/TurnEverythingOff.py' script."""
@@ -766,8 +778,9 @@ def set_cron_for_attract_camera(settings):
     c = crontab.CronTab(user="pi")
     try:
         for i in c.find_command("UploadMMM"):
-            if not i.command.startswith("cd /home/pi/Desktop"):
-                i.set_command("cd /home/pi/Desktop/Mothbox/Web && ./UploadMMM.py >> /home/pi/Desktop/Mothbox/logs/Upload_log.txt 2>&1")
+            # Remove from cron by comment
+            c.enable(False)
+
         
         interval = settings.get("camera_interval", 1)
         minute = settings["minute"].split(";")
@@ -1033,7 +1046,9 @@ elif mode == "DEBUG":
     print("System is in DEBUG mode - keeping power and wifi on")
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
     subprocess.run([debug_script_path])
-    # stopcron()
+    print("Scheduling upload to run every 10 minutes")
+    schedule_upload(10)
+    stopcron()
 
 if runtime > 0 and mode != "DEBUG":
     enable_shutdown()
