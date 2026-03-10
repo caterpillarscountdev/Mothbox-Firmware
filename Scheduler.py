@@ -824,7 +824,7 @@ def set_cron_for_attract_camera(settings):
         attractOnFirst.dow.on(*weekday)
 
         attractOnNext.hour.on(*next_hour)
-        attractOnNext.dow.on(*next_weekday)
+        attractOnNext.dow.on(*next_day)
     except ValueError as e:
         print("Problem parsing cron settings", e)
     c.write()
