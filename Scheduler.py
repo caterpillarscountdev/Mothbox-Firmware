@@ -764,27 +764,46 @@ def set_wakeup_alarm(epoch_time):
 
 def set_cron_for_attract_camera(settings):
     c = crontab.CronTab(user="pi")
-    interval = settings.get("camera_interval", 1)
-    minute = settings["minute"].replace(";", ",")
-    hour = settings["hour"].replace(";", ",")
-    weekday = settings["weekday"].replace(";", ",")
-    
-    for i in c.find_command("TakePhoto"):
-        i.minute.every(interval)
-        i.hour.parse(hour)
-        i.dow.parse(weekday)
-    for i in c.find_command("UploadMMM"):
-        if not i.command.startswith("cd /home/pi/Desktop"):
-            i.set_command("cd /home/pi/Desktop/Mothbox/Web && ./UploadMMM.py >> /home/pi/Desktop/Mothbox/logs/Upload_log.txt 2>&1")
     try:
+        for i in c.find_command("UploadMMM"):
+            # Remove from cron by comment
+            c.enable(False)
+
+        
+        interval = settings.get("camera_interval", 1)
+        minute = settings["minute"].split(";")
+        hour = settings["hour"].split(";")
+        weekday = settings["weekday"].split(";")
+
+        next_day = [ (x+1)%7 for x in weekday ]
+        next_hour = [x for x in hour if x < 8]
+        hour = [x for x in hour if x >= 8]
+
+        takePhoto = list(c.find_command("TakePhoto"))
+        takePhotoFirst = takePhoto[0]
+        if len(takePhoto) < 2:
+            # Need two cron lines for before/after midnight
+            takePhotoNext = c.new(takePhotoFirst.command, takePhotoFirst.comment)
+        else:
+            takePhotoNext = takePhoto[1]
+            
+        takePhotoFirst.minute.every(interval)
+        takePhotoFirst.hour.on(*hour)
+        takePhotoFirst.dow.on(*weekday)
+        
+        takePhotoNext.minute.every(interval)
+        takePhotoNext.hour.on(*next_hour)
+        takePhotoNext.dow.on(*next_day)
+
         for i in c.find_command("Attract_On"):
-            if "," in minute:
-                i.minute.parse(minute)
+            if len(minute) > 1:
+                i.minute.on(minute)
             else:
+                m = int(minute[0])
                 # first few minutes of runtime to ensure close to wakeup 
-                i.minute.during(int(minute), min(int(minute)+int(settings["runtime"]), 5))
-                i.hour.parse(hour)
-                i.dow.parse(weekday)
+                i.minute.during(m, min(m+int(settings["runtime"]), 5))
+                i.hour.on(*(hour+next_hour))
+                i.dow.on(*(weekday+next_day))
     except ValueError as e:
         print("Problem parsing cron settings", e)
     c.write()
