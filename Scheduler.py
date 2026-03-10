@@ -783,9 +783,9 @@ def set_cron_for_attract_camera(settings):
 
         
         interval = settings.get("camera_interval", 1)
-        minute = settings["minute"].split(";")
-        hour = settings["hour"].split(";")
-        weekday = settings["weekday"].split(";")
+        minute = settings["minute"].replace(";", ",").split(",")
+        hour = settings["hour"].replace(";", ",").split(",")
+        weekday = settings["weekday"].replace(";", ",").split(",")
 
         next_day = [ (int(x)+1)%7 for x in weekday ]
         next_hour = [x for x in hour if int(x) < 8]
@@ -1043,12 +1043,13 @@ if mode == "OFF":
         run_shutdown_pi5()
     # quit()
 elif mode == "DEBUG":
-    print("System is in DEBUG mode - keeping power and wifi on")
+    print("System is in DEBUG mode - keeping power and wifi on, turning off cron for schedule")
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
     subprocess.run([debug_script_path])
+    stopcron()
     print("Scheduling upload to run every 10 minutes")
     schedule_upload(10)
-    stopcron()
+
 
 if runtime > 0 and mode != "DEBUG":
     enable_shutdown()
