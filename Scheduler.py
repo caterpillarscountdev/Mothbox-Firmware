@@ -716,7 +716,12 @@ def calculate_next_event(_settings):
     next_one = one.schedule(date_from=datetime.now()).get_next()
     next_two = two.schedule(date_from=datetime.now()).get_next()
     # Convert the datetime object to epoch time
-    return min(int(next_one.timestamp()),int(next_two.timestamp()))
+    if len(cron_times["hour"]) and len(cron_times["next_hour"]):
+        return min(int(next_one.timestamp()),int(next_two.timestamp()))
+    elif len(cron_times["hour"]):
+        return int(next_one.timestamp())
+    else:
+        return int(next_two.timestamp())
 
 
 def clear_wakeup_alarm():
@@ -767,11 +772,13 @@ def set_cron_for_attract_camera(settings):
             takePhotoNext = c.new(takePhotoFirst.command, takePhotoFirst.comment)
         else:
             takePhotoNext = takePhoto[1]
-            
+
+
         takePhotoFirst.minute.every(cron_times["interval"])
         takePhotoFirst.hour.on(*cron_times["hour"])
         takePhotoFirst.dow.on(*cron_times["weekday"])
-        
+
+
         takePhotoNext.minute.every(cron_times["interval"])
         takePhotoNext.hour.on(*cron_times["next_hour"])
         takePhotoNext.dow.on(*cron_times["next_day"])
@@ -794,6 +801,22 @@ def set_cron_for_attract_camera(settings):
 
         attractOnNext.hour.on(*cron_times["next_hour"])
         attractOnNext.dow.on(*cron_times["next_day"])
+
+        if len(cron_times["hour"]):
+            takePhotoFirst.enable()
+            attractOnFirst.enable()
+        else:
+            takePhotoFirst.enable(False)
+            attractOnFirst.enable(False)
+
+        if len(cron_times["next_hour"]):
+            takePhotoNext.enable()
+            attractOnNext.enable()
+        else:
+            takePhotoNext.enable(False)
+            attractOnNext.enable(False)
+            
+
     except ValueError as e:
         print("Problem parsing cron settings", e)
     c.write()
