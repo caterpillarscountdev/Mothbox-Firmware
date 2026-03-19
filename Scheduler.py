@@ -1003,8 +1003,8 @@ elif mode == "DEBUG":
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
     subprocess.run([debug_script_path])
     stopcron()
-    subprocess.run("sudo iw dev wlan0 set power_save off")
-    subprocess.run("sudo iw dev wlan1 set power_save off")
+    subprocess.run("sudo iw dev wlan0 set power_save off".split(" "))
+    subprocess.run("sudo iw dev wlan1 set power_save off".split(" "))
     GPIO.cleanup()
     print("Scheduling upload to run every 10 minutes")
     schedule_upload(10)
