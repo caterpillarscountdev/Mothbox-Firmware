@@ -450,29 +450,7 @@ def run_shutdown_pi5():
     if "utc_off" in settings:
         del settings["utc_off"]
 
-    # don't need to modify the hours to UTC like we do for pijuice
-    # Build Cron expression
-    # The cron expression is made of five fields. Each field can have the following values.
-    # minute (0-59) |	hour (0 - 23)	|day of the month (1 - 31)	| month (1 - 12)	| day of the week (0 - 6)
-
-    # Loop through each key-value pair in the dictionary
-    for key, value in settings.items():
-        # Check if the value is a string and contains semicolons
-        if isinstance(value, str) and ";" in value:
-            # Replace semicolons with commas
-            settings[key] = value.replace(";", ",")
-    cron_expression = (
-        str(settings["minute"])
-        + " "
-        + str(settings["hour"])
-        + " "
-        + "*"
-        + " "
-        + "*"
-        + " "
-        + str(settings["weekday"])
-    )
-    next_epoch_time = calculate_next_event(cron_expression)
+    next_epoch_time = calculate_next_event(settings)
 
     # Clear existing wakeup alarm (assuming sudo access)
     clear_wakeup_alarm()
@@ -545,30 +523,7 @@ def run_shutdown_pi5_FAST():
         del settings["utc_off"]
 
 
-    # don't need to modify the hours to UTC like we do for pijuice
-    # Build Cron expression
-    # The cron expression is made of five fields. Each field can have the following values.
-    # minute (0-59) |	hour (0 - 23)	|day of the month (1 - 31)	| month (1 - 12)	| day of the week (0 - 6)
-
-    # Loop through each key-value pair in the dictionary
-    for key, value in settings.items():
-        # Check if the value is a string and contains semicolons
-        if isinstance(value, str) and ";" in value:
-            # Replace semicolons with commas
-            settings[key] = value.replace(";", ",")
-    cron_expression = (
-        str(settings["minute"])
-        + " "
-        + str(settings["hour"])
-        + " "
-        + "*"
-        + " "
-        + "*"
-        + " "
-        + str(settings["weekday"])
-    )
-    #print(cron_expression)
-    next_epoch_time = calculate_next_event(cron_expression)
+    next_epoch_time = calculate_next_event(settings)
 
     # Clear existing wakeup alarm (assuming sudo access)
     clear_wakeup_alarm()
@@ -736,23 +691,32 @@ def modify_hours(data, offsett_value, key="hour"):
     return data  # Return the modified dictionary (or original if no modification)
 
 
-def calculate_next_event(cron_expression):
+def calculate_next_event(_settings):
     """
-    Calculates the next scheduled time based on the cron expression.
+    Calculates the next scheduled time based on settings, soonest of split times.
     Args:
-        cron_expression: A string representing the cron expression.
+        settings
     Returns:
         A unix timestamp (epoch time) of the next scheduled event.
     """
-    # Create a cron object from the expression
+
+    cron_times = calculate_split_cron_times(_settings)
     cron = CronTab()
-    job = cron.new(command="echo hello_world")
-    job.setall(cron_expression)
+    one = cron.new(command="echo hello_world")
+    two = cron.new(command="echo hello_world")
+    
+    one.minute.on(*cron_times["minute"])
+    one.hour.on(*cron_times["hour"])
+    one.dow.on(*cron_times["weekday"])
+    
+    two.minute.on(*cron_times["minute"])
+    two.hour.on(*cron_times["next_hour"])
+    two.dow.on(*cron_times["next_day"])
     # Get the next scheduled time as a datetime object
-    schedule = job.schedule(date_from=datetime.now())
-    next_scheduled = schedule.get_next()
+    next_one = one.schedule(date_from=datetime.now()).get_next()
+    next_two = two.schedule(date_from=datetime.now()).get_next()
     # Convert the datetime object to epoch time
-    return int(next_scheduled.timestamp())
+    return min(int(next_one.timestamp()),int(next_two.timestamp()))
 
 
 def clear_wakeup_alarm():
@@ -774,6 +738,19 @@ def set_wakeup_alarm(epoch_time):
     #Write to controls here!
     set_nextWakeinControls("/home/pi/Desktop/Mothbox/controls.txt",epoch_time)
 
+def calculate_split_cron_times(settings):
+    interval = settings.get("camera_interval", 1)
+    minute = settings["minute"].replace(";", ",").split(",")
+    hour = settings["hour"].replace(";", ",").split(",")
+    weekday = settings["weekday"].replace(";", ",").split(",")
+    
+    next_day = [ (int(x)+1)%7 for x in weekday ]
+    next_hour = [x for x in hour if int(x) < 8]
+    hour = [x for x in hour if int(x) >= 8]
+    return locals()
+
+    
+    
 def set_cron_for_attract_camera(settings):
     c = crontab.CronTab(user="pi")
     try:
@@ -781,15 +758,7 @@ def set_cron_for_attract_camera(settings):
             # Remove from cron by comment
             i.enable(False)
 
-        
-        interval = settings.get("camera_interval", 1)
-        minute = settings["minute"].replace(";", ",").split(",")
-        hour = settings["hour"].replace(";", ",").split(",")
-        weekday = settings["weekday"].replace(";", ",").split(",")
-
-        next_day = [ (int(x)+1)%7 for x in weekday ]
-        next_hour = [x for x in hour if int(x) < 8]
-        hour = [x for x in hour if int(x) >= 8]
+        cron_times = calculate_split_cron_times(settings)
 
         takePhoto = list(c.find_command("TakePhoto"))
         takePhotoFirst = takePhoto[0]
@@ -799,13 +768,13 @@ def set_cron_for_attract_camera(settings):
         else:
             takePhotoNext = takePhoto[1]
             
-        takePhotoFirst.minute.every(interval)
-        takePhotoFirst.hour.on(*hour)
-        takePhotoFirst.dow.on(*weekday)
+        takePhotoFirst.minute.every(cron_times["interval"])
+        takePhotoFirst.hour.on(*cron_times["hour"])
+        takePhotoFirst.dow.on(*cron_times["weekday"])
         
-        takePhotoNext.minute.every(interval)
-        takePhotoNext.hour.on(*next_hour)
-        takePhotoNext.dow.on(*next_day)
+        takePhotoNext.minute.every(cron_times["interval"])
+        takePhotoNext.hour.on(*cron_times["next_hour"])
+        takePhotoNext.dow.on(*cron_times["next_day"])
 
         attractOn = list(c.find_command("Attract_On"))
         attractOnFirst = attractOn[0]
@@ -820,11 +789,11 @@ def set_cron_for_attract_camera(settings):
         attractOnFirst.minute.during(m, min(m+int(settings["runtime"]), 5))
         attractOnNext.minute.during(m, min(m+int(settings["runtime"]), 5))
 
-        attractOnFirst.hour.on(*hour)
-        attractOnFirst.dow.on(*weekday)
+        attractOnFirst.hour.on(*cron_times["hour"])
+        attractOnFirst.dow.on(*cron_times["weekday"])
 
-        attractOnNext.hour.on(*next_hour)
-        attractOnNext.dow.on(*next_day)
+        attractOnNext.hour.on(*cron_times["next_hour"])
+        attractOnNext.dow.on(*cron_times["next_day"])
     except ValueError as e:
         print("Problem parsing cron settings", e)
     c.write()
@@ -984,29 +953,7 @@ if rpiModel == 4:
     )  # just re-doing this in case this flag gets shut off due to a full power-outage
 
 if rpiModel == 5:
-    # don't need to modify the hours to UTC like we do for pijuice
-    # Build Cron expression
-    # The cron expression is made of five fields. Each field can have the following values.
-    # minute (0-59) |	hour (0 - 23)	|day of the month (1 - 31)	| month (1 - 12)	| day of the week (0 - 6)
-
-    # Loop through each key-value pair in the dictionary
-    for key, value in settings.items():
-        # Check if the value is a string and contains semicolons
-        if isinstance(value, str) and ";" in value: 
-            # Replace semicolons with commas
-            settings[key] = value.replace(";", ",")
-    cron_expression = (
-        str(settings["minute"])
-        + " "
-        + str(settings["hour"])
-        + " "
-        + "*"
-        + " "
-        + "*"
-        + " "
-        + str(settings["weekday"])
-    )
-    next_epoch_time = calculate_next_event(cron_expression)
+    next_epoch_time = calculate_next_event(settings)
 
     # Clear existing wakeup alarm (assuming sudo access)
     clear_wakeup_alarm()
@@ -1056,6 +1003,8 @@ elif mode == "DEBUG":
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
     subprocess.run([debug_script_path])
     stopcron()
+    subprocess.run("sudo iw dev wlan0 set power_save off")
+    subprocess.run("sudo iw dev wlan1 set power_save off")
     GPIO.cleanup()
     print("Scheduling upload to run every 10 minutes")
     schedule_upload(10)
