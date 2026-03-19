@@ -784,7 +784,7 @@ def set_cron_for_attract_camera(settings):
         else:
             attractOnNext = attractOn[1]
 
-        m = int(minute[0])
+        m = int(cron_times["minute"][0])
         # first few minutes of runtime to ensure close to wakeup
         attractOnFirst.minute.during(m, min(m+int(settings["runtime"]), 5))
         attractOnNext.minute.during(m, min(m+int(settings["runtime"]), 5))
