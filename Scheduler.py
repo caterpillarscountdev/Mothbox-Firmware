@@ -436,6 +436,7 @@ def run_upload():
 
 def check_switch_changed():
     global mode
+    GPIO.setmode(GPIO.BCM)
     changed = ( mode == "DEBUG" != debug_connected_to_ground() )
     GPIO.cleanup()
     if changed:
