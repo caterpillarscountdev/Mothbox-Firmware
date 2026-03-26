@@ -439,7 +439,7 @@ def check_switch_changed():
     changed = ( mode == "DEBUG" != debug_connected_to_ground() )
     GPIO.cleanup()
     if changed:
-        print "Mode changed, rebooting now"
+        print("Mode changed, rebooting now")
         os.system("sudo shutdown -r now") 
 
         
