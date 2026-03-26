@@ -438,10 +438,11 @@ def check_switch_changed():
     global mode
     GPIO.setmode(GPIO.BCM)
     changed = ( mode == "DEBUG" != debug_connected_to_ground() )
+    
     GPIO.cleanup()
     if changed:
         print("Mode changed, rebooting now")
-        os.system("sudo shutdown -r now") 
+        #os.system("sudo shutdown -r now") 
 
         
 def run_shutdown_pi4():
