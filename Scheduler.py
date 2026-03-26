@@ -416,6 +416,7 @@ def schedule_shutdown(minutes):
 
             schedule.run_pending()
             time.sleep(1)
+            check_switch_changed()
     except KeyboardInterrupt:
         print("Shutdown scheduling stopped.")
         
@@ -425,13 +426,23 @@ def schedule_upload(minutes):
     try:
         while True:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(3)
+            check_switch_changed()
     except KeyboardInterrupt:
         print("Upload scheduling stopped.")
 
 def run_upload():
     subprocess.run("cd /home/pi/Desktop/Mothbox/Web && ./UploadMMM.py >> /home/pi/Desktop/Mothbox/logs/Upload_log.txt 2>&1", shell=True)
 
+def check_switch_changed():
+    global mode
+    changed = ( mode == "DEBUG" != debug_connected_to_ground() )
+    GPIO.cleanup()
+    if changed:
+        print "Mode changed, rebooting now"
+        os.system("sudo shutdown -r now") 
+
+        
 def run_shutdown_pi4():
     """Executes the '/home/pi/Desktop/Mothbox/TurnEverythingOff.py' script."""
     print("about to launch the shutdown")
@@ -644,7 +655,7 @@ def stopcron():
     """Executes the '/home/pi/Desktop/Mothbox/StopCron.py' script."""
     print("stopping cron, you need to enable it yourself if needed, or reboot")
     subprocess.run(["python", "/home/pi/Desktop/Mothbox/StopCron.py"])
-
+    
 
 def add_wifi_credentials(ssid, password):
     """Adds a new WiFi network configuration to the Raspberry Pi using NetworkManager (Bookworm).
@@ -1034,9 +1045,10 @@ elif mode == "DEBUG":
 
 
 if runtime > 0 and mode != "DEBUG":
+    uptime = 5
     enable_shutdown()
-    print("Stuff will run for " + str(runtime) + " minutes before shutdown")
-    schedule_shutdown(runtime)
+    print("Stuff will run for " + str(uptime) + " minutes before shutdown")
+    schedule_shutdown(uptime)
 else:
     print("no shutdown scheduled, will run indefinitely")
 
