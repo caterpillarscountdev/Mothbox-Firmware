@@ -415,7 +415,7 @@ def schedule_shutdown(minutes):
                 break
 
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(5)
             check_switch_changed()
     except KeyboardInterrupt:
         print("Shutdown scheduling stopped.")
@@ -426,7 +426,7 @@ def schedule_upload(minutes):
     try:
         while True:
             schedule.run_pending()
-            time.sleep(3)
+            time.sleep(5)
             check_switch_changed()
     except KeyboardInterrupt:
         print("Upload scheduling stopped.")
@@ -437,12 +437,12 @@ def run_upload():
 def check_switch_changed():
     global mode
     GPIO.setmode(GPIO.BCM)
-    changed = ( mode == "DEBUG" != debug_connected_to_ground() )
+    changed = ( mode == "DEBUG") != debug_connected_to_ground()
     
     GPIO.cleanup()
     if changed:
         print("Mode changed, rebooting now")
-        #os.system("sudo shutdown -r now") 
+        os.system("sudo shutdown -r now") 
 
         
 def run_shutdown_pi4():
@@ -954,15 +954,15 @@ attracttwo = 0
 #Instead of the sleep delay, we will use the GPS 10 second lookup and make use of this time
 
 # GPS check / 10 second delay
-print("Checking GPS (if available) for 10 seconds")
-process = subprocess.Popen(['python', '/home/pi/Desktop/Mothbox/GPS.py'],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
-stdout, stderr = process.communicate()
-if stderr:
-  print(f"Error running script: {stderr.decode()}")
-else:
-  print(stdout.decode())
+#print("Checking GPS (if available) for 10 seconds")
+#process = subprocess.Popen(['python', '/home/pi/Desktop/Mothbox/GPS.py'],
+#                          stdout=subprocess.PIPE,
+#                          stderr=subprocess.PIPE)
+#stdout, stderr = process.communicate()
+#if stderr:
+#  print(f"Error running script: {stderr.decode()}")
+#else:
+#  print(stdout.decode())
 
 
 # ~~~~~~~ Do the Scheduling ~~~~~~~~~~~~~~~~~~~~
