@@ -805,9 +805,10 @@ def set_cron_for_attract_camera(settings):
             attractOnNext = attractOn[1]
 
         m = int(cron_times["minute"][0])
+        m_next = min(m+5, 59)
         # first few minutes of runtime to ensure close to wakeup
-        attractOnFirst.minute.during(m, min(m+int(settings["runtime"]), 5))
-        attractOnNext.minute.during(m, min(m+int(settings["runtime"]), 5))
+        attractOnFirst.minute.during(m, m_next)
+        attractOnNext.minute.during(m, m_next)
 
         attractOnFirst.hour.on(*cron_times["hour"])
         attractOnFirst.dow.on(*cron_times["weekday"])
