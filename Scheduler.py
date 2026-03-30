@@ -717,7 +717,7 @@ def calculate_cron_events(_settings):
     two.minute.on(*cron_times["minute"])
     two.hour.on(*cron_times["next_hour"])
     two.dow.on(*cron_times["next_day"])
-    return one, two
+    return cron_times, one, two
 
 def calculate_next_event(_settings):
     """
@@ -727,7 +727,7 @@ def calculate_next_event(_settings):
     Returns:
         A unix timestamp (epoch time) of the next scheduled event.
     """
-    one, two = calculate_cron_events(_settings)
+    cron_times, one, two = calculate_cron_events(_settings)
     # Get the next scheduled time as a datetime object
     next_one = one.schedule(date_from=datetime.now()).get_next()
     next_two = two.schedule(date_from=datetime.now()).get_next()
@@ -778,7 +778,7 @@ def calculate_if_in_an_event(_settings):
     Returns:
         A unix timestamp (epoch time) of the next scheduled event.
     """
-    one, two = calculate_cron_events(_settings)
+    cron_times, one, two = calculate_cron_events(_settings)
 
     now = datetime.now()
     offset = timedelta(minutes=2)
