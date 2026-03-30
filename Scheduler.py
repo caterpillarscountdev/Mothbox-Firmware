@@ -18,7 +18,7 @@ from time import sleep
 import csv
 import time
 import datetime
-from datetime import datetime
+from datetime import datetime, timedelta
 import subprocess
 from subprocess import Popen  # For executing external scripts
 import os
@@ -30,6 +30,7 @@ from time import sleep
 
 import crontab
 from crontab import CronTab
+import croniter
 import logging
 import re
 import RPi.GPIO as GPIO
@@ -703,16 +704,7 @@ def modify_hours(data, offsett_value, key="hour"):
 
     return data  # Return the modified dictionary (or original if no modification)
 
-
-def calculate_next_event(_settings):
-    """
-    Calculates the next scheduled time based on settings, soonest of split times.
-    Args:
-        settings
-    Returns:
-        A unix timestamp (epoch time) of the next scheduled event.
-    """
-
+def calculate_cron_events(_settings):
     cron_times = calculate_split_cron_times(_settings)
     cron = CronTab()
     one = cron.new(command="echo hello_world")
@@ -725,6 +717,17 @@ def calculate_next_event(_settings):
     two.minute.on(*cron_times["minute"])
     two.hour.on(*cron_times["next_hour"])
     two.dow.on(*cron_times["next_day"])
+    return one, two
+
+def calculate_next_event(_settings):
+    """
+    Calculates the next scheduled time based on settings, soonest of split times.
+    Args:
+        settings
+    Returns:
+        A unix timestamp (epoch time) of the next scheduled event.
+    """
+    one, two = calculate_cron_events(_settings)
     # Get the next scheduled time as a datetime object
     next_one = one.schedule(date_from=datetime.now()).get_next()
     next_two = two.schedule(date_from=datetime.now()).get_next()
@@ -735,7 +738,7 @@ def calculate_next_event(_settings):
         return int(next_one.timestamp())
     else:
         return int(next_two.timestamp())
-
+    
 
 def clear_wakeup_alarm():
     """
@@ -767,6 +770,25 @@ def calculate_split_cron_times(settings):
     hour = [x for x in hour if int(x) >= 8]
     return locals()
 
+def calculate_if_in_an_event(_settings):
+    """
+    Calculates whether we are in a wakeup window (plus or minus 2 minutes)
+    Args:
+        settings
+    Returns:
+        A unix timestamp (epoch time) of the next scheduled event.
+    """
+    one, two = calculate_cron_events(_settings)
+
+    now = datetime.now()
+    offset = timedelta(minutes=2)
+    start = now - offset
+    end = now + offset
+
+    overlaps = list(croniter.croniter_range(start, end, one.slices.render())) + \
+         list(croniter.croniter_range(start, end, two.slices.render()))
+
+    return len(overlaps) > 0
     
     
 def set_cron_for_attract_camera(settings):
@@ -1039,7 +1061,6 @@ elif mode == "DEBUG":
     print("System is in DEBUG mode - keeping power and wifi on, turning off cron for schedule")
     debug_script_path = "/home/pi/Desktop/Mothbox/DebugMode.py"
     subprocess.run([debug_script_path])
-    stopcron()
     subprocess.run("sudo iw dev wlan0 set power_save off".split(" "))
     subprocess.run("sudo iw dev wlan1 set power_save off".split(" "))
     GPIO.cleanup()
@@ -1049,6 +1070,9 @@ elif mode == "DEBUG":
 
 if runtime > 0 and mode != "DEBUG":
     uptime = 5
+    # did we wake up for a run, or should we quickly shutdown to wait?
+    if calculate_if_in_an_event(settings):
+        uptime = runtime
     enable_shutdown()
     print("Stuff will run for " + str(uptime) + " minutes before shutdown")
     schedule_shutdown(uptime)

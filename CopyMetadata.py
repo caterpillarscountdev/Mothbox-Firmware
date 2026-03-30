@@ -14,7 +14,7 @@ photo_path = os.path.join(root_path, 'photos')
 logs_path = os.path.join(root_path, 'logs')
 
 logs = ['Attract_On_log.txt', 'Scheduler_log.txt', 'Backup_log.txt', 'TakePhoto_log.txt', 'Upload_log.txt']
-confs = ['site_metadata.txt', 'schedule_settings.csv', 'camera_settings.csv']
+confs = ['site_metadata.csv', 'schedule_settings.csv', 'camera_settings.csv']
 
 
 def dated_folder(base_path=photo_path, now=None):
