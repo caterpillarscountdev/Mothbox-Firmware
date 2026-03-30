@@ -781,7 +781,7 @@ def calculate_if_in_an_event(_settings):
     cron_times, one, two = calculate_cron_events(_settings)
 
     now = datetime.now()
-    offset = timedelta(minutes=2)
+    offset = timedelta(minutes=3)
     start = now - offset
     end = now + offset
 
