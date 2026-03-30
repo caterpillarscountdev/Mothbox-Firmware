@@ -416,7 +416,7 @@ def schedule_shutdown(minutes):
                 break
 
             schedule.run_pending()
-            time.sleep(5)
+            time.sleep(10)
             check_switch_changed()
     except KeyboardInterrupt:
         print("Shutdown scheduling stopped.")
@@ -427,7 +427,7 @@ def schedule_upload(minutes):
     try:
         while True:
             schedule.run_pending()
-            time.sleep(5)
+            time.sleep(10)
             check_switch_changed()
     except KeyboardInterrupt:
         print("Upload scheduling stopped.")
