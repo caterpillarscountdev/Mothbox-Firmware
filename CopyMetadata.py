@@ -9,6 +9,8 @@ import shutil, tempfile, os
 
 from datetime import datetime, timedelta
 
+from settings import Settings
+
 root_path = os.path.dirname(os.path.realpath(__file__))
 photo_path = os.path.join(root_path, 'photos')
 logs_path = os.path.join(root_path, 'logs')
@@ -49,6 +51,9 @@ dest = dated_folder()
 if not dest:
     print(f"{formatted_time} No photos folder for today")
 else:
+    s = Settings()
+    with open(os.path.join(dest, "metadata.json"), 'w') as json_file:
+      json_file.write(s.to_json())
     with tempfile.TemporaryDirectory() as tempd:
         templogs = os.path.join(tempd, 'logs')
         os.mkdir(templogs)
