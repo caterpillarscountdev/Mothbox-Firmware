@@ -17,6 +17,7 @@ import time
 from time import sleep
 import csv
 import time
+import math
 import datetime
 from datetime import datetime, timedelta
 import subprocess
@@ -761,13 +762,20 @@ def set_wakeup_alarm(epoch_time):
 
 def calculate_split_cron_times(settings):
     interval = settings.get("camera_interval", 1)
+    runtime = settings.get("runtime", 1)
     minute = settings["minute"].replace(";", ",").split(",")
-    hour = settings["hour"].replace(";", ",").split(",")
+    hour = [int(x) for x in settings["hour"].replace(";", ",").split(",")]
     weekday = settings["weekday"].replace(";", ",").split(",")
-    
-    next_day = [ (int(x)+1)%7 for x in weekday ]
-    next_hour = [x for x in hour if int(x) < 8]
-    hour = [x for x in hour if int(x) >= 8]
+
+    # extend hours for multi-hour runtimes
+    extra_hours = [
+        (x+j)%24 for x in hour
+        for j in range(1, math.ceil((minute+runtime)/60))
+    ]
+    hour = sorted(set(hour + extra_hours)
+    next_day = [ (x+1)%7 for x in weekday ]
+    next_hour = [x for x in hour if x < 8]
+    hour = [x for x in hour if x >= 8]
     return locals()
 
 def calculate_if_in_an_event(_settings):
