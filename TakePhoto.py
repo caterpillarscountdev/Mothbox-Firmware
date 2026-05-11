@@ -66,7 +66,7 @@ if RAW_TEST:
     if not os.path.exists(p):
         os.makedirs(p)
     testPath= p+"/test.jpg"
-    subprocess.run(['libcamera-still', '-o', testPath, '--vflip'])
+    subprocess.run(['libcamera-still', '-o', testPath, '--rotation=180'])
     exit()
 
 
