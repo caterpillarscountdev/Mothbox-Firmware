@@ -55,14 +55,17 @@ if(mode=="OFF"):
     print("MODE OFF no photo!")
     quit()
 
-RAW_TEST=false
+RAW_TEST=False
 try:
     RAW_TEST = sys.argv[1] == 'raw'
 except IndexError as e:
     pass
 
 if RAW_TEST:
-    testPath= "/home/pi/Desktop/Mothbox/thumbnails/test.jpg"
+    p = "/tmp/test_photos"
+    if not os.path.exists(p):
+        os.makedirs([])
+    testPath= p+"/test.jpg"
     subprocess.run(['libcamera-still', '-o', testPath, '--vflip'])
     exit()
 
