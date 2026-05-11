@@ -64,7 +64,7 @@ except IndexError as e:
 if RAW_TEST:
     p = "/tmp/test_photos"
     if not os.path.exists(p):
-        os.makedirs([])
+        os.makedirs(p)
     testPath= p+"/test.jpg"
     subprocess.run(['libcamera-still', '-o', testPath, '--vflip'])
     exit()
