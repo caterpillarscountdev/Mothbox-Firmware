@@ -55,7 +55,16 @@ if(mode=="OFF"):
     print("MODE OFF no photo!")
     quit()
 
+RAW_TEST=false
+try:
+    RAW_TEST = sys.argv[1] == 'raw'
+except IndexError as e:
+    pass
 
+if RAW_TEST:
+    testPath= "/home/pi/Desktop/Mothbox/thumbnails/test.jpg"
+    subprocess.run(['libcamera-still', '-o', testPath, '--vflip'])
+    exit()
 
 
 internal_storage_minimum = 5 # This is Gigabytes, below 4 on a raspberry pi 4, can make weird OS problems
