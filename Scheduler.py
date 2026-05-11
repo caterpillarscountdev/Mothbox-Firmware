@@ -1080,7 +1080,7 @@ if runtime > 0 and mode != "DEBUG":
     uptime = 5
     # did we wake up for a run, or should we quickly shutdown to wait?
     if calculate_if_in_an_event(settings):
-        uptime = runtime
+        uptime = runtime + 2
     enable_shutdown()
     print("Stuff will run for " + str(uptime) + " minutes before shutdown")
     schedule_shutdown(uptime)
