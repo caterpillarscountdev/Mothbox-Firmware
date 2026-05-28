@@ -376,6 +376,8 @@ def load_settings(filename):
                     attracttwo = value.lower() in ['1', 'true']
                 elif setting == "attractOffPhoto":
                     attractoffphoto = value.lower() in ['1', 'true']
+                elif setting == "poweredDay":
+                    value = value.lower() in ['1', 'true']
 
                 settings[setting] = value
 
@@ -422,11 +424,13 @@ def schedule_shutdown(minutes):
     except KeyboardInterrupt:
         print("Shutdown scheduling stopped.")
         
-def schedule_upload(minutes):
+def schedule_upload(minutes, repeat=True):
     schedule.every(minutes).minutes.do(run_upload)
 
     try:
-        while True:
+        while repeat >= 1:
+            if repeat > 1: # countdown not True
+                repeat = repeat - 1;
             schedule.run_pending()
             time.sleep(10)
             check_switch_changed()
@@ -708,8 +712,12 @@ def modify_hours(data, offsett_value, key="hour"):
 def calculate_cron_events(_settings):
     cron_times = calculate_split_cron_times(_settings)
     cron = CronTab()
-    one = cron.new(command="echo hello_world")
-    two = cron.new(command="echo hello_world")
+    one = cron.new(command="echo tonight")
+    two = cron.new(command="echo tomorrow")
+    if _settings.get("poweredDay", False):
+        day = cron.new(command="echo day")
+        day.minute.on(1)
+        day.hour.on(9)
     
     one.minute.on(*cron_times["minute"])
     one.hour.on(*cron_times["hour"])
@@ -718,7 +726,7 @@ def calculate_cron_events(_settings):
     two.minute.on(*cron_times["minute"])
     two.hour.on(*cron_times["next_hour"])
     two.dow.on(*cron_times["next_day"])
-    return cron_times, one, two
+    return cron
 
 def calculate_next_event(_settings):
     """
@@ -728,18 +736,11 @@ def calculate_next_event(_settings):
     Returns:
         A unix timestamp (epoch time) of the next scheduled event.
     """
-    cron_times, one, two = calculate_cron_events(_settings)
+    cron = calculate_cron_events(_settings)
     # Get the next scheduled time as a datetime object
-    next_one = one.schedule(date_from=datetime.now()).get_next()
-    next_two = two.schedule(date_from=datetime.now()).get_next()
-    # Convert the datetime object to epoch time
-    if len(cron_times["hour"]) and len(cron_times["next_hour"]):
-        return min(int(next_one.timestamp()),int(next_two.timestamp()))
-    elif len(cron_times["hour"]):
-        return int(next_one.timestamp())
-    else:
-        return int(next_two.timestamp())
-    
+    n = datetime.now()
+    return min(int(x.schedule(date_from=n).get_next().timestamp())
+               for x in cron.crons if x.hour.render() != "*")
 
 def clear_wakeup_alarm():
     """
@@ -786,16 +787,14 @@ def calculate_if_in_an_event(_settings):
     Returns:
         A unix timestamp (epoch time) of the next scheduled event.
     """
-    cron_times, one, two = calculate_cron_events(_settings)
+    cron = calculate_cron_events(_settings)
 
     now = datetime.now()
     offset = timedelta(minutes=3)
     start = now - offset
     end = now + offset
 
-    overlaps = list(croniter.croniter_range(start, end, one.slices.render())) + \
-         list(croniter.croniter_range(start, end, two.slices.render()))
-
+    overlaps = list(x for c in cron.crons for x in croniter.croniter_range(start, end, c.slices.render()))
     return len(overlaps) > 0
     
     
@@ -1083,6 +1082,15 @@ if runtime > 0 and mode != "DEBUG":
         uptime = runtime + 2
     enable_shutdown()
     print("Stuff will run for " + str(uptime) + " minutes before shutdown")
+    if settings.get("poweredDay", False):
+        if 8 < datetime.now().hour < 17:
+            print("Powered mode during daytime")
+            subprocess.run(["sudo", "/home/pi/Desktop/Mothbox/scripts/MothPower/stop_lowpower.sh"])
+            print("Wifi will remain on.")
+            print("Scheduling upload to run every 10 minutes")
+            schedule_upload(10, repeat=4)
+            schedule_shutdown(20)
+
     schedule_shutdown(uptime)
 else:
     print("no shutdown scheduled, will run indefinitely")
