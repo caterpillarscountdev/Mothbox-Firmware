@@ -1058,7 +1058,6 @@ else:
 
 NO_WAIT=False
 try:
-    print(sys.argv)
     NO_WAIT = sys.argv[1] == 'no_wait'
 except IndexError as e:
     pass
