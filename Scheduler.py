@@ -322,15 +322,15 @@ def load_settings(filename):
     default_path = "/home/pi/Desktop/Mothbox/schedule_settings.csv"
     search_depth = 2  # only want to look in the top directory of an external drive, two levels gets us there while still looking through any media
     file_path = default_path
-    for path in external_media_paths:
-        found = find_file(path, "schedule_settings.csv", depth=search_depth)
-        if found:
-            file_path = found
-            print(f"Found settings on external media: {file_path}")
-            break
-            
-    if file_path == default_path:
-        print("No external settings, using internal csv")
+    #for path in external_media_paths:
+    #    found = find_file(path, "schedule_settings.csv", depth=search_depth)
+    #    if found:
+    #        file_path = found
+    #        print(f"Found settings on external media: {file_path}")
+    #        break
+    #        
+    #if file_path == default_path:
+    #    print("No external settings, using internal csv")
 
 
     global runtime, utc_off, ssid, wifipass, newwifidetected, onlyflash, attractoffphoto, attracttwo
@@ -1055,6 +1055,17 @@ if stderr:
 else:
   print(stdout.decode())
 '''
+
+NO_WAIT=False
+try:
+    print sys.argv
+    NO_WAIT = sys.argv[1] == 'no_wait'
+except IndexError as e:
+    pass
+
+if NO_WAIT:
+    print("NO wait, quitting")
+    sys.exit(0)
 
 #Final Step (No other code past this, this is where it sits and waits until shutdown)
 # - prepare shutdown and wait
