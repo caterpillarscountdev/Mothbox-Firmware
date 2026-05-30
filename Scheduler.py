@@ -429,7 +429,7 @@ def schedule_upload(minutes, repeat=True):
 
     try:
         while repeat >= 1:
-            if repeat > 1: # countdown not True
+            if repeat is not True: # countdown
                 repeat = repeat - 1;
             schedule.run_pending()
             time.sleep(10)
