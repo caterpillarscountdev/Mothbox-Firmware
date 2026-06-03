@@ -767,10 +767,10 @@ def calculate_split_cron_times(settings):
     hour = [int(x) for x in settings["hour"].replace(";", ",").split(",")]
     weekday = settings["weekday"].replace(";", ",").split(",")
 
-    # extend hours for multi-hour runtimes
+    # extend hours for multi-hour runtimes, +1 to runtime for top of the hour
     extra_hours = [
         (x+j)%24 for x in hour
-        for j in range(1, math.ceil((int(minute[0])+int(runtime))/60))
+        for j in range(1, math.ceil((int(minute[0])+int(runtime)+1)/60))
     ]
     hour = sorted(set(hour + extra_hours))
     next_day = [ (int(x)+1)%7 for x in weekday ]
