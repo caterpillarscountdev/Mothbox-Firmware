@@ -74,7 +74,7 @@ def check_eeprom_settings():
     output = subprocess.check_output(["sudo", "rpi-eeprom-config"]).decode("utf-8")
     settings = {}
     for line in output.splitlines():
-        match = re.match(r"(\w+)=(\d+)", line)
+        match = re.match(r"(\w+)=(\w+)", line)
         if match:
             settings[match.group(1)] = match.group(2)
     return settings
