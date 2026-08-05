@@ -764,8 +764,8 @@ def calculate_split_cron_times(settings):
     interval = settings.get("camera_interval", 1)
     runtime = settings.get("runtime", 1)
     minute = settings["minute"].replace(";", ",").split(",")
-    hour = [int(x) for x in settings["hour"].replace(";", ",").split(",")]
-    weekday = settings["weekday"].replace(";", ",").split(",")
+    hour = [int(x) for x in settings["hour"].replace(";", ",").split(",") if x]
+    weekday = [x for x in settings["weekday"].replace(";", ",").split(",") if x]
 
     # extend hours for multi-hour runtimes, +1 to runtime for top of the hour
     extra_hours = [
@@ -937,6 +937,7 @@ if(mode=="OFF"):
 
 print(f"Current time: {formatted_time} on a RPi model {rpiModel} mode {mode}")
 
+settings = load_settings("/home/pi/Desktop/Mothbox/schedule_settings.csv")
 
 # ~~~~~~ Setting the Mothbox's unique name ~~~~~~~~~~~~~~~~~~
 
@@ -964,6 +965,10 @@ serial_number = get_serial_number()
 # 0 is english 1 is spanish 2 is either spanish or enlgish 3 is spanglish
 unique_name = generate_unique_name(serial_number, 0)
 print(f"Unique name for device: {unique_name} {serial_number}")
+name_override = settings.get("name_override", None)
+if name_override:
+    unique_name = name_override
+    print(f"  name overridden by settings to: {unique_name}")
 
 # Change it in controls
 set_computerName("/home/pi/Desktop/Mothbox/controls.txt", unique_name)
@@ -997,7 +1002,6 @@ attracttwo = 0
 
 
 # ~~~~~~~ Do the Scheduling ~~~~~~~~~~~~~~~~~~~~
-settings = load_settings("/home/pi/Desktop/Mothbox/schedule_settings.csv")
 set_timings("/home/pi/Desktop/Mothbox/controls.txt", settings["minute"], settings["hour"],settings["weekday"],settings["runtime"])
 
 
