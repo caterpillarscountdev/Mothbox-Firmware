@@ -764,8 +764,8 @@ def calculate_split_cron_times(settings):
     interval = settings.get("camera_interval", 1)
     runtime = settings.get("runtime", 1)
     minute = settings["minute"].replace(";", ",").split(",")
-    hour = [int(x) for x in settings["hour"].replace(";", ",").split(",")]
-    weekday = settings["weekday"].replace(";", ",").split(",")
+    hour = [int(x) for x in settings["hour"].replace(";", ",").split(",") if x]
+    weekday = [x for x in settings["weekday"].replace(";", ",").split(",") if x]
 
     # extend hours for multi-hour runtimes, +1 to runtime for top of the hour
     extra_hours = [
