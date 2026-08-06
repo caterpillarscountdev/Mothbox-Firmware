@@ -937,6 +937,9 @@ if(mode=="OFF"):
 
 print(f"Current time: {formatted_time} on a RPi model {rpiModel} mode {mode}")
 
+# Ensure wifi is enabled at start
+subprocess.run("rfkill unblock wifi".split(" "))
+
 # ~~~~~~ Load Settings ~~~~~~~~~~~~~
 
 utc_off = 0  # this is the offsett from UTC time we use to set the alarm
