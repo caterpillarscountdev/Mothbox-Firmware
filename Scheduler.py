@@ -937,6 +937,16 @@ if(mode=="OFF"):
 
 print(f"Current time: {formatted_time} on a RPi model {rpiModel} mode {mode}")
 
+# ~~~~~~ Load Settings ~~~~~~~~~~~~~
+
+utc_off = 0  # this is the offsett from UTC time we use to set the alarm
+runtime = (
+    0  # this is how long to run the mothbox in minutes for once we wakeup 0 is forever
+)
+onlyflash = 0
+attractoffphoto = 0
+attracttwo = 0
+
 settings = load_settings("/home/pi/Desktop/Mothbox/schedule_settings.csv")
 
 # ~~~~~~ Setting the Mothbox's unique name ~~~~~~~~~~~~~~~~~~
@@ -975,15 +985,6 @@ set_computerName("/home/pi/Desktop/Mothbox/controls.txt", unique_name)
 
 # ~~~~~~~~~~~~ Figuring out Scheduling Details ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~ Pi 5 specific things to change cron-like commands to the next UTC target
-
-
-utc_off = 0  # this is the offsett from UTC time we use to set the alarm
-runtime = (
-    0  # this is how long to run the mothbox in minutes for once we wakeup 0 is forever
-)
-onlyflash = 0
-attractoffphoto = 0
-attracttwo = 0
 
 # need to add a delay to let the external drives mount!
 #time.sleep(10)
