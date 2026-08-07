@@ -938,7 +938,11 @@ if(mode=="OFF"):
 print(f"Current time: {formatted_time} on a RPi model {rpiModel} mode {mode}")
 
 # Ensure wifi is enabled at start
-subprocess.run("rfkill unblock wifi".split(" "))
+try:
+    subprocess.run("/usr/sbin/rfkill unblock wifi".split(" "))
+except Exception as e:
+    print(f"No rfkill unblock: {e}")
+    
 
 # ~~~~~~ Load Settings ~~~~~~~~~~~~~
 
