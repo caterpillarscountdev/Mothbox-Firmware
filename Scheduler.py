@@ -894,18 +894,20 @@ if rpiModel == 4:
 
 if rpiModel == 5:
     os.system("sudo hwclock -w")
+    try:
+        desired_settings = {"POWER_OFF_ON_HALT": "1", "WAKE_ON_GPIO": "0"}
+        current_settings = check_eeprom_settings()
 
-    desired_settings = {"POWER_OFF_ON_HALT": "1", "WAKE_ON_GPIO": "0"}
-    current_settings = check_eeprom_settings()
-
-    if not all(
-        current_settings.get(key) == value for key, value in desired_settings.items()
-    ):
-        for key, value in desired_settings.items():
-            if key not in current_settings or current_settings[key] != value:
-                current_settings[key] = value
-        set_eeprom_settings(current_settings)
-        print("EEPROM settings updated.")
+        if not all(
+                current_settings.get(key) == value for key, value in desired_settings.items()
+        ):
+            for key, value in desired_settings.items():
+                if key not in current_settings or current_settings[key] != value:
+                    current_settings[key] = value
+            set_eeprom_settings(current_settings)
+            print("EEPROM settings updated.")
+    except subprocess.CalledProcessError as e:
+        print(f"EEPROM settings error: {e}")
 
 # -----CHECK THE PHYSICAL SWITCH on the GPIO PINS--------------------
 
