@@ -789,7 +789,7 @@ def calculate_if_in_an_event(_settings):
     cron_times, one, two = calculate_cron_events(_settings)
 
     now = datetime.now()
-    offset = timedelta(minutes=3)
+    offset = timedelta(minutes=4)
     start = now - offset
     end = now + offset
 
@@ -1101,10 +1101,10 @@ elif mode == "DEBUG":
 
 
 if runtime > 0 and mode != "DEBUG":
-    uptime = 5
+    uptime = 3
     # did we wake up for a run, or should we quickly shutdown to wait?
     if calculate_if_in_an_event(settings):
-        uptime = runtime + 2
+        uptime = runtime + 4
     enable_shutdown()
     print("Stuff will run for " + str(uptime) + " minutes before shutdown")
     schedule_shutdown(uptime)
