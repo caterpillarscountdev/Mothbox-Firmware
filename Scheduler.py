@@ -1084,7 +1084,10 @@ if NO_WAIT:
 for r, d, f in os.walk("/home/pi/Desktop/Mothbox/photos"):
     for x in f:
         if x.endswith(".txt"):
-            os.chmod(os.path.join(r, x), 0o666)
+            try:
+                os.chmod(os.path.join(r, x), 0o666)
+            except PermissionError:
+                print("couldn't fix perms for {os.path.join(r, x)}")
     
 #Final Step (No other code past this, this is where it sits and waits until shutdown)
 # - prepare shutdown and wait
