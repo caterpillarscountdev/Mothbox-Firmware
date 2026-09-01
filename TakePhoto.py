@@ -398,7 +398,7 @@ def create_dated_folder(base_path):
   return folder_path+"/"
 
 def takePhoto_Manual():
-    global middleexposure, calib_lens_position, calib_exposure, cgains
+    global middleexposure, calib_lens_position, calib_exposure, cgains, OUTPUT_PATH
     # LensPosition: Manual focus, Set the lens position.
     now = datetime.now()
     timestamp = now.strftime("%Y_%m_%d__%H_%M_%S")  # Adjust the format as needed
