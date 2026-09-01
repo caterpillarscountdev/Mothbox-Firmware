@@ -1080,6 +1080,12 @@ if NO_WAIT:
     print("NO wait, quitting")
     sys.exit(0)
 
+# Cleanup perms in photos
+for r, d, f in os.walk("/home/pi/Desktop/Mothbox/photos"):
+    for x in f:
+        if x.endswith(".txt"):
+            os.chmod(os.path.join(r, x), 0o666)
+    
 #Final Step (No other code past this, this is where it sits and waits until shutdown)
 # - prepare shutdown and wait
 # Toggle System MODE, shut down if in OFF/INACTIVE mode
