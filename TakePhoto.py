@@ -55,6 +55,11 @@ if(mode=="OFF"):
     print("MODE OFF no photo!")
     quit()
 
+OUTPUT_PATH=None
+try:
+    OUTPUT_PATH = sys.argv[1]
+except IndexError as e:
+    pass
 
 
 
@@ -470,12 +475,13 @@ def takePhoto_Manual():
           pil_image = img
           # Save the image using PIL to get the image data on disk
           folderPath= "/home/pi/Desktop/Mothbox/photos/" #can't use relative directories with cron
+          if OUTPUT_PATH:
+              folderPath = os.path.normpath(os.path.join(folderPath, "..", OUTPUT_PATH))
           if not os.path.exists(folderPath):
             os.makedirs(folderPath)
           os.chmod(folderPath, 0o777)  # mode=0o777 for read write for all users
 
           folderPath = create_dated_folder(folderPath)
-          
           
           if ImageFileType==1: #png
               filepath = folderPath+computerName+"_"+timestamp+"_HDR"+str(i)+".png"
@@ -715,7 +721,9 @@ else:
 time.sleep(.5)
 takePhoto_Manual()
 
-
+if not OUTPUT_PATH:
+    subprocess.run(["/home/pi/Desktop/Mothbox/CopyMetadata.py"])
+          
 #cannot call GPIO cleanup here because it will kill the relay turning on the attractor
     
 quit()

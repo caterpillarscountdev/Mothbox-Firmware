@@ -51,9 +51,12 @@ dest = dated_folder()
 if not dest:
     print(f"{formatted_time} No photos folder for today")
 else:
+    if os.path.exists(os.path.join(os.path.join(dest, 'metadata.zip'))):
+        print(f"{formatted_time} metadata.zip already exists")
+        exit()
     s = Settings()
     with open(os.path.join(dest, "metadata.json"), 'w') as json_file:
-      json_file.write(s.to_json())
+        json_file.write(s.to_json())
     with tempfile.TemporaryDirectory() as tempd:
         templogs = os.path.join(tempd, 'logs')
         os.mkdir(templogs)

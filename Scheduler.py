@@ -476,7 +476,7 @@ def run_shutdown_pi5():
     set_wakeup_alarm(next_epoch_time)
 
 
-    # Copy metadata here at end of run
+    # Copy metadata again here at end of run
     subprocess.run(["/home/pi/Desktop/Mothbox/CopyMetadata.py"])
 
     
